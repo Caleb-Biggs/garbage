@@ -22,7 +22,7 @@ arena* arena_new(size_t data_size){
 	output->arena_size = 0;
 	output->arena_max = ARENA_MAX;
 	output->last_empty = ARENA_MAX-1;
-	output->data = malloc(data_size * ARENA_MAX); // TODO: This can be malloc
+	output->data = malloc(data_size * ARENA_MAX);
 	for(uint8_t i = 0; i < ARENA_MAX; i++){
 		output->data[data_size*i] = i-1;
 	}
