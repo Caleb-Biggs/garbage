@@ -3,8 +3,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <valgrind/memcheck.h>
-#include "graph.h"
-#include "arena.h"
+// #include "graph.h"
+// #include "arena.h"
+#include "garbage.h"
 
 
 const size_t ARENA_MAX = 8;
@@ -70,18 +71,29 @@ void arena_print(arena a){
 
 #define TYPE uint16_t
 int main(int argc, char const *argv[]){
-	MemArr* a = mem_arr_new();
+	GarbageCollector* g = garbage_collector_new();
 
-	char* chars = "CALEB BIGGS IS EXCELLENT AT TESTING HIS AMAZING CODE";
-	for(int i = 0; i < 33; i++) mem_arr_insert(a, chars+i);
+	gc_start_function(g);
+	// gc_start_function(g);
+	gc_alloc(g, sizeof(uint16_t));
+	// gc_end_function(g, NULL);
+	gc_end_function(g, NULL);
 
-	mem_arr_remove_marked(a);
+	garbage_collector_free(&g);
 
-	char* chars2 = "abcdefghijklmnopqrstuvwxyz";
-	for(int i = 0; i < 17; i++) mem_arr_insert(a, chars2+i);
 
-	mem_arr_print(a);
-	mem_arr_free(&a);
+	// MemArr* a = mem_arr_new();
+
+	// char* chars = "CALEB BIGGS IS EXCELLENT AT TESTING HIS AMAZING CODE";
+	// for(int i = 0; i < 33; i++) mem_arr_insert(a, chars+i);
+
+	// mem_arr_remove_marked(a);
+
+	// char* chars2 = "abcdefghijklmnopqrstuvwxyz";
+	// for(int i = 0; i < 17; i++) mem_arr_insert(a, chars2+i);
+
+	// mem_arr_print(a);
+	// mem_arr_free(&a);
 
 
 

@@ -42,7 +42,7 @@ void mem_arr_free(MemArr** a){
 	free((*a)->marks);
 	for(uint64_t i = 0; i < (*a)->last; i++){
 		if((*a)->data[i].type != DATA) continue;
-		// free((*a)->data[i].data.p); // TODO: uncomment
+		free((*a)->data[i].data.p); // TODO: uncomment
 	}
 	free((*a)->data);
 	free(*a);
@@ -77,25 +77,24 @@ MemCont index_container(uint64_t index){
 }
 
 
-bool mem_arr_push(MemArr* a, void* data){
-	if(a == NULL) return false;
+MemLoc mem_arr_push(MemArr* a, void* data){
+	if(a == NULL) printf("mem_arr_push should not recieve NULL");
 	if(a->size == a->max_size) mem_arr_resize(a);
 	a->data[a->size] = data_container(data);
-	a->empty++;
 	a->last++;
 	a->size++;
-	return true;
+	return (MemLoc){a->empty++};
 }
 
 
-bool mem_arr_insert(MemArr* a, void* data){
-	if(a == NULL) return false;
+MemLoc mem_arr_insert(MemArr* a, void* data){
+	if(a == NULL) printf("mem_arr_insert should not recieve NULL");
 	if(a->last == a->empty) return mem_arr_push(a, data);
 	uint64_t index = a->empty;
 	a->empty = a->data[index].data.i;
 	a->data[index] = data_container(data);
 	a->size++;
-	return true;
+	return (MemLoc){index};
 }
 
 

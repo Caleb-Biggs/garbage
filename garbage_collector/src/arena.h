@@ -35,7 +35,7 @@ typedef struct MEMORY_LOCATION { uint64_t v; } MemLoc;
 
 MemArr* mem_arr_new();
 void mem_arr_free(MemArr** a);
-bool mem_arr_insert(MemArr* a, void* data);
+MemLoc mem_arr_insert(MemArr* a, void* data);
 void mark_keep(MemArr* a, MemLoc index);
 void mem_arr_remove_marked(MemArr* a);
 void mem_arr_print(MemArr* a);

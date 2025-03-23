@@ -1,29 +1,39 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "arena.h"
+
 typedef enum NODE_TYPE {
-	// DATA, 
-	FUNCTION
-} node_type;
+	MEMORY,	FUNCTION
+} NodeType;
+
+struct NODE_LIST;
 
 typedef struct NODE {
-	node_type type;
+	NodeType type;
 	uint16_t num_refs;
-	struct NODE* refs;
-} node;
+	MemLoc index; // Not used for FUNCTION type
+	struct NODE_LIST* refs;
+} Node;
 
 typedef struct NODE_LIST {
-	node* n;
+	Node* n;
 	struct NODE_LIST* next;
-} node_list;
+} NodeList;
 
 typedef struct GRAPH {
-	node* root;
-	node_list* context;
-} graph;
+	Node* root;
+	NodeList* context;
+} Graph;
 
-void list_push(node_list** l, node* context);
-node* list_pop(node_list** l);
-void list_free(node_list** l);
+Node* node_new(NodeType type, MemLoc* index);
+
+void list_push(NodeList** l, Node* context);
+Node* list_pop(NodeList** l);
+void list_free(NodeList** l);
+
+void graph_free(Graph** g);
+void graph_insert_data(Graph* g, MemLoc index);
+void graph_insert_function(Graph* g);
 
 #endif
