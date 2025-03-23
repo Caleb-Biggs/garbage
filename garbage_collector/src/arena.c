@@ -10,7 +10,7 @@ uint64_t marks_size(MemArr* a){
 }
 
 
-bool get_mark(MemArr* a, uint64_t index){
+bool is_marked(MemArr* a, uint64_t index){
 	// TODO: Check index OOB?
 	// if(index > a->max_size);
 	size_t sz = sizeof(*(a->marks))*8;
@@ -18,7 +18,7 @@ bool get_mark(MemArr* a, uint64_t index){
 }
 
 
-void mark_deletion(MemArr* a, uint64_t index){
+void mark_keep(MemArr* a, uint64_t index){
 	size_t sz = sizeof(*(a->marks))*8;
 	a->marks[index/sz] |= (((uint64_t)1)<<(index%sz));
 }
@@ -101,7 +101,7 @@ bool mem_arr_insert(MemArr* a, void* data){
 
 void mem_arr_remove_marked(MemArr* a){
 	for(uint64_t i = 0; i < a->last; i++){
-		if(get_mark(a, i) == 0) continue;
+		if(is_marked(a, i)) continue;
 		a->data[i] = index_container(a->empty);
 		a->empty = i;
 		a->size--;
@@ -114,8 +114,8 @@ void mem_arr_print(MemArr* a){
 	printf("Size = %li; Max = %li; Empty = %li\n", a->last, a->max_size, a->empty);
 	for(int i = 0; i < a->last; i++){
 		if(a->data[i].type == INDEX) 
-			printf("[%i] %i; i: %li\n", i, get_mark(a, i), a->data[i].data.i);
-		else printf("[%i] %i; d: %c\n", i, get_mark(a, i), *(char*)(a->data[i].data.p));
+			printf("[%i] %i; i: %li\n", i, is_marked(a, i), a->data[i].data.i);
+		else printf("[%i] %i; d: %c\n", i, is_marked(a, i), *(char*)(a->data[i].data.p));
 	}
 	for(int i = 0; i < marks_size(a); i++){
 		printf("%lo\n", (uint64_t)(a->marks[i]));
