@@ -1,0 +1,3 @@
+garbage_collector/out
+garbage_collector/*.o
+compiler/target

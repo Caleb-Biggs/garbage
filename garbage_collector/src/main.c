@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <valgrind/memcheck.h>
+#include "graph.h"
+#include "test.h"
 
 
 const size_t ARENA_MAX = 8;
@@ -68,43 +70,78 @@ void arena_print(arena a){
 
 #define TYPE uint16_t
 int main(int argc, char const *argv[]){
-	arena* a = arena_new(sizeof(TYPE));
+	MemArr* a = mem_arr_new();
 
-	TYPE* n0 = new(a);
-	*n0 = (uint16_t)'C'<<8|'A';
+	char* chars = "CALEB BIGGS IS EXCELLENT AT TESTING HIS AMAZING CODE";
+	for(int i = 0; i < 33; i++) mem_arr_insert(a, chars+i);
 
-	TYPE* n1 = new(a);
-	*n1 = (uint16_t)'L'<<8|'E';
+	mem_arr_remove_marked(a);
 
-	TYPE* n2 = new(a);
-	*n2 = (uint16_t)'B'<<8|'B';
+	char* chars2 = "abcdefghijklmnopqrstuvwxyz";
+	for(int i = 0; i < 17; i++) mem_arr_insert(a, chars2+i);
 
-	TYPE* n3 = new(a);
-	*n3 = (uint16_t)'I'<<8|'G';
+	mem_arr_print(a);
+	mem_arr_free(&a);
 
-	TYPE* n4 = new(a);
-	*n4 = (uint16_t)'G'<<8|'S';
 
-	TYPE* n5 = new(a);
-	*n5 = (uint16_t)'P'<<8|'I';
 
-	TYPE* n6 = new(a);
-	*n6 = (uint16_t)'Z'<<8|'Z';
+	////
 
-	TYPE* n7 = new(a);
-	*n7 = (uint16_t)'A'<<8|'1';
+	// node_list* l = NULL;
 
-	rem(a, n3);
-	rem(a, n5);
+	// node n1 = {DATA, 0, NULL};
+	// list_push(&l, &n1);
 
-	TYPE* n8 = new(a);
-	*n8 = (uint16_t)'A'<<8|'B';
+	// node n2 = {DATA, 0, NULL};
+	// list_push(&l, &n2);
 
-	TYPE* n9 = new(a);
-	*n9 = (uint16_t)'C'<<8|'D';	
+	// node n3 = {DATA, 0, NULL};
+	// list_push(&l, &n3);
 
-	arena_print(*a);
-	arena_free(&a);
+	// node n4 = {DATA, 0, NULL};
+	// list_push(&l, &n4);
+
+	// list_free(&l);
+
+	////
+
+	// arena* a = arena_new(sizeof(TYPE));
+
+	// TYPE* n0 = new(a);
+	// *n0 = (uint16_t)'C'<<8|'A';
+
+	// TYPE* n1 = new(a);
+	// *n1 = (uint16_t)'L'<<8|'E';
+
+	// TYPE* n2 = new(a);
+	// *n2 = (uint16_t)'B'<<8|'B';
+
+	// TYPE* n3 = new(a);
+	// *n3 = (uint16_t)'I'<<8|'G';
+
+	// TYPE* n4 = new(a);
+	// *n4 = (uint16_t)'G'<<8|'S';
+
+	// TYPE* n5 = new(a);
+	// *n5 = (uint16_t)'P'<<8|'I';
+
+	// TYPE* n6 = new(a);
+	// *n6 = (uint16_t)'Z'<<8|'Z';
+
+	// TYPE* n7 = new(a);
+	// *n7 = (uint16_t)'A'<<8|'1';
+
+	// rem(a, n3);
+	// rem(a, n5);
+
+	// TYPE* n8 = new(a);
+	// *n8 = (uint16_t)'A'<<8|'B';
+
+	// TYPE* n9 = new(a);
+	// *n9 = (uint16_t)'C'<<8|'D';	
+
+	// arena_print(*a);
+	// arena_free(&a);
 
 	return 0;
 }
