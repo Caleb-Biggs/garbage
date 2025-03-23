@@ -4,6 +4,7 @@
 #include <math.h>
 #include "arena.h"
 
+// TODO: Automaically shrink MemArray
 
 uint64_t marks_size(MemArr* a){
 	return (uint64_t)(ceilf((double)(a->max_size)/(8.0*sizeof(*(a->marks)))));
@@ -18,9 +19,9 @@ bool is_marked(MemArr* a, uint64_t index){
 }
 
 
-void mark_keep(MemArr* a, uint64_t index){
+void mark_keep(MemArr* a, MemLoc index){
 	size_t sz = sizeof(*(a->marks))*8;
-	a->marks[index/sz] |= (((uint64_t)1)<<(index%sz));
+	a->marks[index.v/sz] |= (((uint64_t)1)<<(index.v%sz));
 }
 
 
@@ -53,9 +54,8 @@ bool mem_arr_resize(MemArr* a){
 	if(a == NULL) return false;
 	uint64_t prev_size = marks_size(a);
 	a->max_size *= RESIZE_RATIO;
-	printf("Realloc %lu\n", marks_size(a) * sizeof(*(a->marks)));
 	a->marks = realloc(a->marks, marks_size(a) * sizeof(*(a->marks)));
-	memset(a->marks+prev_size, 0, prev_size);
+	memset(a->marks+prev_size, 0, marks_size(a)-prev_size);
 	a->data = realloc(a->data, a->max_size * sizeof(*(a->data)));
 	return true;
 }
