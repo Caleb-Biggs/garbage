@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <valgrind/memcheck.h>
 #include "graph.h"
-#include "test.h"
+#include "arena.h"
 
 
 const size_t ARENA_MAX = 8;

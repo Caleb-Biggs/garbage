@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "test.h"
+#include "arena.h"
 
 
 uint64_t marks_size(MemArr* a){
