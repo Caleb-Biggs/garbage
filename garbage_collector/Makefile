@@ -2,8 +2,8 @@ CC := gcc
 CFLAGS := -Werror -Wall -pedantic -g
 LIBS := -lm
 TARGET := out
-OBJS := src/main.o src/graph.c src/arena.c src/garbage.c
-HEADERS := src/graph.h src/arena.h src/garbage.h
+OBJS := src/main.o src/hashset.c
+HEADERS := src/hashset.h
 
 $(TARGET): $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
