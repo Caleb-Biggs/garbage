@@ -3,30 +3,30 @@
 
 #include "arena.h"
 
-typedef enum NODE_TYPE {
-	MEMORY,	FUNCTION
-} NodeType;
+// typedef enum NODE_TYPE {
+// 	MEMORY,	FUNCTION
+// } NodeType;
 
 struct NODE_LIST;
 
-typedef struct NODE {
-	NodeType type;
-	uint16_t num_refs;
-	MemLoc index; // Not used for FUNCTION type
-	struct NODE_LIST* refs;
-} Node;
+// typedef struct NODE {
+// 	NodeType type;
+// 	uint16_t num_refs;
+// 	MemLoc index; // Not used for FUNCTION type
+// 	struct NODE_LIST* refs;
+// } Node;
 
-typedef struct NODE_LIST {
-	Node* n;
-	struct NODE_LIST* next;
-} NodeList;
+// typedef struct NODE_LIST {
+// 	Node* n;
+// 	struct NODE_LIST* next;
+// } NodeList;
 
 typedef struct GRAPH {
 	Node* root;
 	NodeList* context;
 } Graph;
 
-Node* node_new(NodeType type, MemLoc* index);
+Node* node_new(ContType type, MemLoc* index);
 
 void list_push(NodeList** l, Node* context);
 Node* list_pop(NodeList** l);

@@ -4,9 +4,9 @@
 #include "graph.h"
 
 
-Node* node_new(NodeType type, MemLoc* index){
+Node* node_new(ContType type, MemLoc* index){
 	Node* output = calloc(sizeof(*output), 1);
-	output->type = type;
+	// output->type = type;
 	if(index) output->index = *index;
 	return output;
 }
@@ -38,7 +38,7 @@ void list_free(NodeList** l){
 
 
 void graph_insert_data(Graph* g, MemLoc index){
-	list_push(&(g->context->n->refs), node_new(MEMORY, &index));
+	list_push(&(g->context->n->refs), node_new(DATA, &index));
 }
 
 

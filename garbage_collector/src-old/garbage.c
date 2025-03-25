@@ -32,7 +32,8 @@ void* gc_end_function(GarbageCollector* gc, MemLoc* return_index){
 	// free(list_pop(&(gc->graph->context)));
 	if(return_index == NULL) return NULL;
 	graph_insert_data(gc->graph, *return_index);
-	return gc->memory->data[return_index->v].data.p; // TODO: Error check
+	return gc->memory->data[return_index->v].d.p; // TODO: Error check
+	return NULL; //TODO: Temporary
 }
 
 

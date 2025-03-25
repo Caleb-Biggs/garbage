@@ -7,18 +7,33 @@
 #define MEM_ARR_SIZE 8
 #define RESIZE_RATIO 2
 
+
+typedef struct MEMORY_LOCATION { uint64_t v; } MemLoc;
+
+typedef struct NODE {
+	uint16_t num_refs;
+	void* data;
+	MemLoc index; // Not used for FUNCTION type
+	struct NODE_LIST* refs;
+} Node;
+
+typedef struct NODE_LIST {
+	Node* n;
+	struct NODE_LIST* next;
+} NodeList;
+
 typedef enum CONTAINER_TYPE {
-	DATA, INDEX
+	DATA, INDEX, FUNCTION
 } ContType;
 
 typedef union CONTAINER_DATA {
-	void* p;
+	Node* p;
 	uint64_t i;
 } ContData;
 
 typedef struct MEMORY_CONTAINER {
 	ContType type;
-	ContData data;
+	ContData d;
 } MemCont;
 
 typedef struct MEMORY_ARRAY {
@@ -29,8 +44,6 @@ typedef struct MEMORY_ARRAY {
 	uint64_t* marks; //TODO: Change back to uint_64_t
 	MemCont* data;
 } MemArr;
-
-typedef struct MEMORY_LOCATION { uint64_t v; } MemLoc;
 
 
 MemArr* mem_arr_new();

@@ -42,7 +42,7 @@ void mem_arr_free(MemArr** a){
 	free((*a)->marks);
 	for(uint64_t i = 0; i < (*a)->last; i++){
 		if((*a)->data[i].type != DATA) continue;
-		free((*a)->data[i].data.p); // TODO: uncomment
+		free((*a)->data[i].d.p); // TODO: uncomment
 	}
 	free((*a)->data);
 	free(*a);
@@ -61,10 +61,13 @@ bool mem_arr_resize(MemArr* a){
 }
 
 
-MemCont data_container(void* data){
+MemCont data_container(void* data, MemLoc index){
+	Node* node = calloc(sizeof(*node), 1);
+	node->data = data;
+	node->index = index;
 	return (MemCont){
 		.type = DATA,
-		.data = { .p = data }
+		.d = { .p = node }
 	};
 }
 
@@ -72,7 +75,7 @@ MemCont data_container(void* data){
 MemCont index_container(uint64_t index){
 	return (MemCont){
 		.type = INDEX,
-		.data = { .i = index }
+		.d = { .i = index }
 	};
 }
 
@@ -80,21 +83,22 @@ MemCont index_container(uint64_t index){
 MemLoc mem_arr_push(MemArr* a, void* data){
 	if(a == NULL) printf("mem_arr_push should not recieve NULL");
 	if(a->size == a->max_size) mem_arr_resize(a);
-	a->data[a->size] = data_container(data);
+	MemLoc index = {a->empty++};
+	a->data[a->size] = data_container(data, index);
 	a->last++;
 	a->size++;
-	return (MemLoc){a->empty++};
+	return index;
 }
 
 
 MemLoc mem_arr_insert(MemArr* a, void* data){
 	if(a == NULL) printf("mem_arr_insert should not recieve NULL");
 	if(a->last == a->empty) return mem_arr_push(a, data);
-	uint64_t index = a->empty;
-	a->empty = a->data[index].data.i;
-	a->data[index] = data_container(data);
+	MemLoc index = {a->empty};
+	a->empty = a->data[index.v].d.i;
+	a->data[index.v] = data_container(data, index);
 	a->size++;
-	return (MemLoc){index};
+	return index;
 }
 
 
@@ -113,8 +117,8 @@ void mem_arr_print(MemArr* a){
 	printf("Size = %li; Max = %li; Empty = %li\n", a->last, a->max_size, a->empty);
 	for(int i = 0; i < a->last; i++){
 		if(a->data[i].type == INDEX) 
-			printf("[%i] %i; i: %li\n", i, is_marked(a, i), a->data[i].data.i);
-		else printf("[%i] %i; d: %c\n", i, is_marked(a, i), *(char*)(a->data[i].data.p));
+			printf("[%i] %i; i: %li\n", i, is_marked(a, i), a->data[i].d.i);
+		else printf("[%i] %i; d: %c\n", i, is_marked(a, i), *(char*)(a->data[i].d.p));
 	}
 	for(int i = 0; i < marks_size(a); i++){
 		printf("%lo\n", (uint64_t)(a->marks[i]));
