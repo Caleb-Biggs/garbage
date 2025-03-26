@@ -45,5 +45,6 @@ void mark_keep(MemArr* a, MemLoc index);
 void mem_arr_mark_delete(MemArr* a, MemLoc index);
 void mem_arr_remove_marked(MemArr* a);
 void mem_arr_print(MemArr* a);
+HashSet** mem_arr_get_hash(MemArr* a, MemLoc index);
 
 #endif

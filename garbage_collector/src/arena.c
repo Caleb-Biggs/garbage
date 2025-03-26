@@ -17,6 +17,9 @@ MemArr* mem_arr_new(){
 
 void mem_cont_free(MemArr* a, MemLoc index){
 	if(a->data[index.x].type != DATA) return;
+	if(a->data[index.x].d.p->refs != NULL){
+		hash_set_free(&(a->data[index.x].d.p->refs));
+	}
 	free(mem_arr_get_data(a, index));
 	free(a->data[index.x].d.p);
 }
@@ -41,6 +44,11 @@ void* mem_arr_get_data(MemArr* a, MemLoc index){
 
 Node* mem_arr_get_node(MemArr* a, MemLoc index){
 	return a->data[index.x].d.p;
+}
+
+
+HashSet** mem_arr_get_hash(MemArr* a, MemLoc index){
+	return &(a->data[index.x].d.p->refs);
 }
 
 

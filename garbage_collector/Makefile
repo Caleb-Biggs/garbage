@@ -12,4 +12,4 @@ exec: $(TARGET)
 	./$^
 
 mem: $(TARGET)
-	valgrind --leak-check=full ./$^
+	valgrind --leak-check=full --show-leak-kinds=all ./$^
