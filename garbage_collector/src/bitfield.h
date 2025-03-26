@@ -12,6 +12,7 @@ typedef struct BIT_FIELD {
 
 
 BitField bit_field_new(size_t size);
+size_t bit_field_size(size_t num_bits);
 void bit_field_free(BitField b);
 bool bit_field_get(BitField b, MemLoc index);
 void bit_field_set(BitField* b, MemLoc index, bool val);

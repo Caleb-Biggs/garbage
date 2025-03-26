@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "arena.h"
 
 
@@ -107,22 +108,25 @@ MemLoc mem_arr_insert_data(MemArr* a, void* data){
 }
 
 
-void mem_arr_mark_delete(MemArr* a, MemLoc index){
+void mem_arr_mark_keep(MemArr* a, MemLoc index){
 	bit_field_set(&(a->marks), index, true);
 }
 
 
-void mem_arr_remove_marked(MemArr* a){
+void mem_arr_remove_unmarked(MemArr* a){
 	for(uint64_t i = 0; i < a->last; i++){
-		if(bit_field_get(a->marks, (MemLoc){i}) == 0) continue;
+		if(bit_field_get(a->marks, (MemLoc){i}) == 1) continue;
 		mem_cont_free(a, (MemLoc){i});
 		a->data[i] = index_container(a->empty);
 		a->empty = i;
 		a->size--;
 	}
-	//TODO: Memeset instead of reallocating?
-	free(a->marks.bits);
-	a->marks = bit_field_new(a->max_size);
+	mem_arr_clear_marks(a);
+}
+
+
+void mem_arr_clear_marks(MemArr* a){
+	memset(a->marks.bits, 0, bit_field_size(a->max_size));
 }
 
 
@@ -131,6 +135,8 @@ void mem_arr_print(MemArr* a){
 	for(int i = 0; i < a->last; i++){
 		if(a->data[i].type == INDEX) 
 			printf("[%i] %i; i: %li\n", i, bit_field_get(a->marks, (MemLoc){i}), a->data[i].d.i);
-		else printf("[%i] %i; d: %c\n", i, bit_field_get(a->marks, (MemLoc){i}), *(char*)(mem_arr_get_data(a, (MemLoc){i})));
+		else if(mem_arr_get_data(a, (MemLoc){i}) == NULL){
+			printf("[%i] %i; d: %p\n", i, bit_field_get(a->marks, (MemLoc){i}), mem_arr_get_data(a, (MemLoc){i}));
+		} else printf("[%i] %i; d: %c\n", i, bit_field_get(a->marks, (MemLoc){i}), *(char*)(mem_arr_get_data(a, (MemLoc){i})));
 	}
 }

@@ -1,11 +1,11 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "garbage.h"
 #include "arena.h"
 
 
 /**
- * 
- * 
+ * Linked List
  */
 
 
@@ -24,31 +24,29 @@ void list_push(List** l, MemLoc index){
 }
 
 
-MemLoc* list_pop(List** l){
+List* list_pop(List** l){
 	if(!(*l)) return NULL;
-	List* temp = *l;
-	MemLoc* output = &(temp->index);
-	*l = temp->next;
-	free(temp);
+	List* output = *l;
+	*l = output->next;
 	return output;
 }
 
 
 void list_free(List** l){
-	MemLoc* loc;
-	while((loc = list_pop(l)) != NULL) /*free(loc)*/;
+	List* node;
+	while((node = list_pop(l)) != NULL) free(node);
 }
 
 
 /**
- * 
- * 
+ * Global State
  */
 
 
 typedef struct GRAPH {
 	MemArr* mem;
 	List* context;
+	MemLoc root;
 } Graph;
 
 Graph** state(){
@@ -58,11 +56,49 @@ Graph** state(){
 
 MemArr** memory(){ return &((**state()).mem); }
 List** context(){ return &((**state()).context); }
+MemLoc* root(){ return &(**state()).root; }
 
 
 /**
- * 
- * 
+ * Garbage Collector
+ **/
+
+
+void depth_first(MemLoc root_node, void(*func)(MemLoc)){
+	if(bit_field_get((**memory()).marks, root_node)) return;
+	mem_arr_mark_keep(*memory(), root_node);
+	if(func != NULL) func(root_node);
+	HashSet* h = *mem_arr_get_hash(*memory(), root_node);
+	if(h == NULL) return;
+	for(uint16_t i = 0; i < h->num_buckets; i++){
+		if(!h->is_full[i]) continue;
+		depth_first(h->data[i], func);
+	}
+}
+
+
+void collect_garbage(){
+	depth_first(*root(), NULL);
+	mem_arr_remove_unmarked(*memory());
+}
+
+
+void print_node(MemLoc node){
+	printf("%lu ", node.x);
+}
+
+
+void print_graph(){
+	MemLoc root_node = *root();
+	printf("Total items in arena: %lu\n", (**memory()).size);
+	depth_first(root_node, print_node);
+	printf("\n");
+	mem_arr_clear_marks(*memory());
+}
+
+
+/**
+ * Public Interface
  */
 
 
@@ -94,6 +130,7 @@ void start_garbage_collection(){
 	*state() = calloc(sizeof(Graph), 1);
 	*memory() = mem_arr_new();
 	start_function();
+	*root() = (**context()).index;
 }
 
 
@@ -105,10 +142,20 @@ void end_garbage_collection(){
 
 
 void start_function(){
-	list_push(context(), mem_arr_insert_data(*memory(), NULL));
+	MemLoc function = mem_arr_insert_data(*memory(), NULL);
+	if(*context() != NULL)
+		attach((**context()).index, function);
+	list_push(context(), function);
 }
 
 
-void end_function(){
-	list_pop(context());
+MemLoc end_function(MemLoc* return_loc){
+	List* l = list_pop(context()); //Might be NULL?
+	MemLoc function = l->index;
+	free(l);
+
+	detach((**context()).index, function);
+	if(return_loc == NULL) return (MemLoc){0};
+	attach((**context()).index, *return_loc);
+	return *return_loc;
 }

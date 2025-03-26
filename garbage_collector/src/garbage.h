@@ -12,6 +12,9 @@ void* get(MemLoc index);
 void start_garbage_collection();
 void end_garbage_collection();
 void start_function();
-void end_function();
+MemLoc end_function(MemLoc* return_loc);
+
+void print_graph();
+void collect_garbage();
 
 #endif
