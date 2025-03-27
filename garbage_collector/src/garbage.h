@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include "shared.h"
 
+#define COLLECT_TIME 1e8 //100ms
+
 MemLoc gc_alloc(size_t size);
 void attach(MemLoc parent, MemLoc child);
 void detach(MemLoc parent, MemLoc child);

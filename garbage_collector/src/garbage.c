@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "garbage.h"
 #include "arena.h"
 
@@ -71,6 +72,7 @@ void depth_first(MemLoc root_node, void(*func)(MemLoc)){
 	HashSet* h = *mem_arr_get_hash(*memory(), root_node);
 	if(h == NULL) return;
 	for(uint16_t i = 0; i < h->num_buckets; i++){
+		// printf("%lu, %i\n", h->data[i].x, h->is_full[i]);
 		if(!h->is_full[i]) continue;
 		depth_first(h->data[i], func);
 	}
@@ -78,6 +80,14 @@ void depth_first(MemLoc root_node, void(*func)(MemLoc)){
 
 
 void collect_garbage(){
+	// Do garbage collection if enough time has passed
+	static uint16_t last_collected = 0;
+	struct timespec time;
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	uint64_t curr = time.tv_nsec + time.tv_sec*1e9;
+	if(curr-last_collected < COLLECT_TIME) return;
+
+	printf("Collecting Garbage\n");
 	depth_first(*root(), NULL);
 	mem_arr_remove_unmarked(*memory());
 }
@@ -94,6 +104,8 @@ void print_graph(){
 	depth_first(root_node, print_node);
 	printf("\n");
 	mem_arr_clear_marks(*memory());
+	printf("%lu\n", (**memory()).marks.bits[0]);
+	// mem_arr_print(*memory());
 }
 
 
@@ -146,6 +158,7 @@ void start_function(){
 	if(*context() != NULL)
 		attach((**context()).index, function);
 	list_push(context(), function);
+	collect_garbage();
 }
 
 
@@ -155,7 +168,11 @@ MemLoc end_function(MemLoc* return_loc){
 	free(l);
 
 	detach((**context()).index, function);
-	if(return_loc == NULL) return (MemLoc){0};
+	if(return_loc == NULL) {
+		collect_garbage();
+		return (MemLoc){0};
+	}
 	attach((**context()).index, *return_loc);
+	collect_garbage();
 	return *return_loc;
 }

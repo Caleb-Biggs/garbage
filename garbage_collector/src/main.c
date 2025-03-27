@@ -19,7 +19,7 @@ int main(int argc, char const* argv[]){
 
 		end_function(&l2);
 	
-	collect_garbage();
+	// collect_garbage();
 	print_graph();
 
 
