@@ -17,6 +17,12 @@ int main(void){
 			MemLoc l = gc_alloc(sizeof(char));
 			*(char*)get(l) = str[i%26];
 		}
+
+		MemLoc arr = gc_alloc(sizeof(int)*10);
+		for(int i = 0; i < 10; i++){
+			((int*)get(arr))[i] = i*i;
+		}
+
 		print_graph();
 		collect_garbage();
 		print_graph();
