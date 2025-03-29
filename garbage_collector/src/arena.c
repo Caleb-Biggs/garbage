@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include "arena.h"
 
 
@@ -18,11 +17,9 @@ MemArr* mem_arr_new(){
 
 void mem_cont_free(MemArr* a, MemLoc index){
 	if(a->data[index.x].type != DATA) return;
-	if(a->data[index.x].d.p->refs != NULL){
-		hash_set_free(&(a->data[index.x].d.p->refs));
-	}
-	free(mem_arr_get_data(a, index));
-	free(a->data[index.x].d.p);
+	Node* node = mem_arr_get_node(a, index);
+	void* data = node_free(&node);
+	free(data);
 }
 
 
@@ -39,17 +36,12 @@ void mem_arr_free(MemArr** a){
 
 
 void* mem_arr_get_data(MemArr* a, MemLoc index){
-	return a->data[index.x].d.p->data;
+	return node_get_data(*mem_arr_get_node(a, index));
 }
 
 
 Node* mem_arr_get_node(MemArr* a, MemLoc index){
 	return a->data[index.x].d.p;
-}
-
-
-HashSet** mem_arr_get_hash(MemArr* a, MemLoc index){
-	return &(a->data[index.x].d.p->refs);
 }
 
 
@@ -64,11 +56,9 @@ bool mem_arr_resize(MemArr* a){
 
 
 MemCont data_container(void* data){
-	Node* node = calloc(sizeof(*node), 1);
-	node->data = data;
 	return (MemCont){
 		.type = DATA,
-		.d = { .p = node }
+		.d = { .p = node_new(data) }
 	};
 }
 
@@ -109,13 +99,18 @@ MemLoc mem_arr_insert_data(MemArr* a, void* data){
 
 
 void mem_arr_mark_keep(MemArr* a, MemLoc index){
-	bit_field_set(&(a->marks), index, true);
+	bit_field_set(&(a->marks), index.x, true);
+}
+
+
+bool mem_arr_is_marked(MemArr a, MemLoc index){
+	return bit_field_get(a.marks, index.x);
 }
 
 
 void mem_arr_remove_unmarked(MemArr* a){
 	for(uint64_t i = 0; i < a->last; i++){
-		if(bit_field_get(a->marks, (MemLoc){i}) == 1) continue;
+		if(bit_field_get(a->marks, i) == 1 || a->data[i].type == INDEX) continue;
 		mem_cont_free(a, (MemLoc){i});
 		a->data[i] = index_container(a->empty);
 		a->empty = i;
@@ -126,7 +121,7 @@ void mem_arr_remove_unmarked(MemArr* a){
 
 
 void mem_arr_clear_marks(MemArr* a){
-	memset(a->marks.bits, 0, bit_field_size(a->max_size));
+	bit_field_clear(&(a->marks), a->max_size);
 }
 
 
@@ -134,9 +129,9 @@ void mem_arr_print(MemArr* a){
 	printf("Size = %li; Max = %li; Empty = %li\n", a->last, a->max_size, a->empty);
 	for(int i = 0; i < a->last; i++){
 		if(a->data[i].type == INDEX) 
-			printf("[%i] %i; i: %li\n", i, bit_field_get(a->marks, (MemLoc){i}), a->data[i].d.i);
+			printf("[%i] %i; i: %li\n", i, bit_field_get(a->marks, i), a->data[i].d.i);
 		else if(mem_arr_get_data(a, (MemLoc){i}) == NULL){
-			printf("[%i] %i; d: %p\n", i, bit_field_get(a->marks, (MemLoc){i}), mem_arr_get_data(a, (MemLoc){i}));
-		} else printf("[%i] %i; d: %c\n", i, bit_field_get(a->marks, (MemLoc){i}), *(char*)(mem_arr_get_data(a, (MemLoc){i})));
+			printf("[%i] %i; d: %p\n", i, bit_field_get(a->marks, i), mem_arr_get_data(a, (MemLoc){i}));
+		} else printf("[%i] %i; d: %c\n", i, bit_field_get(a->marks, i), *(char*)(mem_arr_get_data(a, (MemLoc){i})));
 	}
 }

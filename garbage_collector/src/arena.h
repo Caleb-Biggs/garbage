@@ -2,16 +2,11 @@
 #define ARENA_H
 
 #include "bitfield.h"
-#include "hashset.h"
+#include "node.h"
 #include "shared.h"
 
 #define MEM_ARR_SIZE 8
 #define RESIZE_RATIO 2
-
-typedef struct NODE {
-	void* data;
-	HashSet* refs;
-} Node;
 
 typedef enum CONTAINER_TYPE {
 	DATA, INDEX
@@ -38,14 +33,17 @@ typedef struct MEMORY_ARRAY {
 
 MemArr* mem_arr_new();
 void mem_arr_free(MemArr** a);
+
+MemLoc mem_arr_insert_data(MemArr* a, void* data);
 void* mem_arr_get_data(MemArr* a, MemLoc index);
 Node* mem_arr_get_node(MemArr* a, MemLoc index);
-HashSet** mem_arr_get_hash(MemArr* a, MemLoc index);
-MemLoc mem_arr_insert_data(MemArr* a, void* data);
-void mark_keep(MemArr* a, MemLoc index);
+
+void mem_arr_mark_keep(MemArr* a, MemLoc index);
+bool mem_arr_is_marked(MemArr a, MemLoc index);
 void mem_arr_mark_keep(MemArr* a, MemLoc index);
 void mem_arr_remove_unmarked(MemArr* a);
 void mem_arr_clear_marks(MemArr* a);
+
 void mem_arr_print(MemArr* a);
 
 #endif

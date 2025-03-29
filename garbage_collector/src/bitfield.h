@@ -6,15 +6,16 @@
 #include <stddef.h>
 #include "shared.h"
 
+#define BIT_FILED_TYPE uint8_t
 typedef struct BIT_FIELD {
-	uint64_t* bits;
+	BIT_FILED_TYPE* bits;
 } BitField;
 
 
 BitField bit_field_new(size_t size);
-size_t bit_field_size(size_t num_bits);
 void bit_field_free(BitField b);
-bool bit_field_get(BitField b, MemLoc index);
-void bit_field_set(BitField* b, MemLoc index, bool val);
+bool bit_field_get(BitField b, size_t index);
+void bit_field_set(BitField* b, size_t index, bool val);
+void bit_field_clear(BitField* b, size_t size);
 
 #endif

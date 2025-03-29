@@ -3,6 +3,7 @@
 #include <time.h>
 #include "garbage.h"
 #include "arena.h"
+#include "node.h"
 
 
 /**
@@ -65,17 +66,11 @@ MemLoc* root(){ return &(**state()).root; }
  **/
 
 
-void depth_first(MemLoc root_node, void(*func)(MemLoc)){
-	if(bit_field_get((**memory()).marks, root_node)) return;
-	mem_arr_mark_keep(*memory(), root_node);
-	if(func != NULL) func(root_node);
-	HashSet* h = *mem_arr_get_hash(*memory(), root_node);
-	if(h == NULL) return;
-	for(uint16_t i = 0; i < h->num_buckets; i++){
-		// printf("%lu, %i\n", h->data[i].x, h->is_full[i]);
-		if(!h->is_full[i]) continue;
-		depth_first(h->data[i], func);
-	}
+void depth_first(MemLoc root){
+	if(mem_arr_is_marked(**memory(), root)) return;
+	mem_arr_mark_keep(*memory(), root);
+	Node n = *mem_arr_get_node(*memory(), root);
+	node_for_each_neighbor(n, depth_first);
 }
 
 
@@ -88,24 +83,27 @@ void collect_garbage(){
 	if(curr-last_collected < COLLECT_TIME) return;
 
 	printf("Collecting Garbage\n");
-	depth_first(*root(), NULL);
+	depth_first(*root());
 	mem_arr_remove_unmarked(*memory());
+	// mem_arr_print(*memory());
 }
 
 
-void print_node(MemLoc node){
-	printf("%lu ", node.x);
+void print_node(MemLoc root){
+	if(mem_arr_is_marked(**memory(), root)) return;
+	printf("%lu ", root.x);
+	mem_arr_mark_keep(*memory(), root);
+	Node n = *mem_arr_get_node(*memory(), root);
+	node_for_each_neighbor(n, print_node);
 }
 
 
 void print_graph(){
-	MemLoc root_node = *root();
 	printf("Total items in arena: %lu\n", (**memory()).size);
-	depth_first(root_node, print_node);
+	print_node(*root());
 	printf("\n");
 	mem_arr_clear_marks(*memory());
-	printf("%lu\n", (**memory()).marks.bits[0]);
-	// mem_arr_print(*memory());
+	mem_arr_print(*memory());
 }
 
 
@@ -122,14 +120,14 @@ MemLoc gc_alloc(size_t size){
 
 
 void attach(MemLoc parent, MemLoc child){
-	HashSet** h = mem_arr_get_hash(*memory(), parent);
-	hash_set_insert(h, child);
+	Node* n = mem_arr_get_node(*memory(), parent);
+	node_add_neighbor(n, child);
 }
 
 
 void detach(MemLoc parent, MemLoc child){
-	HashSet* h = *mem_arr_get_hash(*memory(), parent);
-	hash_set_delete(h, child);
+	Node* n = mem_arr_get_node(*memory(), parent);
+	node_remove_neighbor(n, child);
 }
 
 
@@ -158,7 +156,7 @@ void start_function(){
 	if(*context() != NULL)
 		attach((**context()).index, function);
 	list_push(context(), function);
-	collect_garbage();
+	// collect_garbage();
 }
 
 
@@ -173,6 +171,6 @@ MemLoc end_function(MemLoc* return_loc){
 		return (MemLoc){0};
 	}
 	attach((**context()).index, *return_loc);
-	collect_garbage();
+	// collect_garbage();
 	return *return_loc;
 }
