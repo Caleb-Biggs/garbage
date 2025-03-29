@@ -16,3 +16,16 @@ mem: $(TARGET)
 
 clean:
 	rm $(TARGET) $(OBJS)
+
+
+### Tests ###
+
+
+tests/tests: tests/tests.c tests/bitfield_tests.c
+	gcc -o $@ $< $$(pkg-config --cflags --libs check)
+
+test: tests/tests
+	valgrind -q --leak-check=full --track-origins=yes --error-exitcode=1 ./$<
+
+test-bitfield: tests/tests
+	valgrind -q --leak-check=full --track-origins=yes --error-exitcode=1 ./$< -b
