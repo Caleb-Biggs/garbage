@@ -1,32 +1,41 @@
 CC := gcc
-CFLAGS := -Werror -Wall -pedantic -g
-LIBS := -lm
-TARGET := out
-MAIN := src/main.o 
-OBJS := src/hashset.o src/bitfield.o src/arena.o src/garbage.o src/node.o
+CFLAGS := -Werror -Wall -Wpedantic -g #-Wextra
 HEADERS := src/hashset.h src/shared.h src/bitfield.h src/arena.h src/garbage.h src/node.h
 
-$(TARGET): $(MAIN) $(OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(MAIN) $(OBJS) $(LIBS)
+LIBS := -lm
+EXEC := out
+MAIN := src/main.o 
+OBJS := src/hashset.o src/bitfield.o src/arena.o src/garbage.o src/node.o
 
-exec: $(TARGET)
+TEST_LIBS := check
+TEST_EXEC := tests/tests
+TEST_MAIN := tests/tests.o
+TEST_OBJS := tests/bitfield_tests.o tests/hashset_tests.o
+
+$(EXEC): $(MAIN) $(OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o $(EXEC) $(MAIN) $(OBJS) $(LIBS)
+
+exec: $(EXEC)
 	./$^
 
-mem: $(TARGET)
+mem: $(EXEC)
 	valgrind --leak-check=full --show-leak-kinds=all ./$^
 
 clean:
-	rm $(TARGET) $(OBJS)
+	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)
 
 
 ### Tests ###
 
 
-tests/tests: tests/tests.c $(TARGET) tests/bitfield_tests.c 
-	gcc -o $@ $< $(OBJS) $$(pkg-config --cflags --libs check)
+$(TEST_EXEC): $(TEST_MAIN) $(EXEC) $(TEST_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ $< $(OBJS) $$(pkg-config --cflags --libs $(TEST_LIBS))
 
-test: tests/tests
+test: $(TEST_EXEC)
 	valgrind -q --leak-check=full --track-origins=yes --error-exitcode=1 ./$<
 
-test-bitfield: tests/tests
+test-bitfield: $(TEST_EXEC)
 	valgrind -q --leak-check=full --track-origins=yes --error-exitcode=1 ./$< -b
+
+test-hashset: $(TEST_EXEC)
+	valgrind -q --leak-check=full --track-origins=yes --error-exitcode=1 ./$< -h

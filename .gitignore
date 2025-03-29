@@ -1,3 +1,5 @@
 garbage_collector/out
 garbage_collector/src/*.o
+garbage_collector/tests/tests
+garbage_collector/tests/*.o
 compiler/target
