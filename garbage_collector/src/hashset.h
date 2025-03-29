@@ -14,7 +14,7 @@ typedef struct HASH_SET {
 	uint16_t num_buckets;
 	uint16_t size;
 	MemLoc* data;
-	BitField is_full;
+	BitField* is_full;
 } HashSet;
 
 

@@ -8,7 +8,8 @@ HashSet* hash_set_init(uint16_t size){
 	output->num_buckets = size;
 	output->size = 0;
 	output->data = calloc(sizeof(*(output->data)), output->num_buckets);
-	output->is_full = bit_field_new(size);
+	if((output->is_full = bit_field_new(size)) == NULL) return NULL;
+	if(!output->is_full) return NULL;
 	return output;
 }
 
@@ -17,7 +18,9 @@ void hash_set_resize(HashSet** h){
 	if(h == NULL || *h == NULL) return; //TODO: better error?
 	HashSet* output = hash_set_init((**h).num_buckets * HASH_SET_INCREASE);
 	for(uint16_t i = 0; i < (**h).num_buckets; i++){
-		if(bit_field_get((**h).is_full, i)) hash_set_insert(&output, (**h).data[i]);
+		int is_full = bit_field_get(*(**h).is_full, i);
+		if(is_full == -1); // TODO: Error
+		if(is_full == 1) hash_set_insert(&output, (**h).data[i]);
 	}
 	hash_set_free(h);
 	*h = output;
@@ -36,7 +39,9 @@ int32_t hash_set_find(HashSet h, MemLoc data){
 	int32_t start = hash_function(data) % h.num_buckets;
 	while(true){
 		if(data.x == h.data[start].x) return -start; // Data already exists
-		if(!bit_field_get(h.is_full, start)) return start;
+		int is_full = bit_field_get(*h.is_full, start);
+		if(is_full == -1); // TODO: Error
+		if(is_full == 0) return start; //0 or 1?
 		if(start++ == h.num_buckets) start = 0;
 	}
 }
@@ -51,7 +56,7 @@ void hash_set_insert(HashSet** h, MemLoc data){
 	int32_t insert_at = hash_set_find(**h, data);
 	if(insert_at < 0) printf("hash_set_find failed");
 	(**h).data[insert_at] = data;
-	bit_field_set(&(**h).is_full, insert_at, true);
+	if(bit_field_set((**h).is_full, insert_at, true) == -1); // TODO: Error
 	(**h).size++;
 }
 
@@ -67,14 +72,16 @@ void hash_set_delete(HashSet* h, MemLoc data){
 	if(loc >= 0 || loc == SIZE_ERROR) return; //TODO: Return error?
 	else loc = -loc;
 	h->size--;
-	bit_field_set(&h->is_full, loc, false);
+	if(bit_field_set(h->is_full, loc, false) == -1); //TODO: Error
 }
 
 
 void hash_set_print(HashSet h){
 	printf("Max size = %i; Filled = %i\n", h.num_buckets, h.size);
 	for(uint16_t i = 0; i < h.num_buckets; i++){
-		printf("[%i] %li %c\n", i, h.data[i].x, (bit_field_get(h.is_full, i))?'f':'e');
+		int is_full = bit_field_get(*h.is_full, i);
+		char full_char = (is_full == -1) ? 'E' : (is_full == 0) ? 'e' : 'f';
+		printf("[%i] %li %c\n", i, h.data[i].x, full_char);
 	}
 }
 
@@ -89,6 +96,8 @@ void hash_set_free(HashSet** h){
 
 void hash_set_for_each(HashSet h, void(*func)(MemLoc)){
 	for(uint16_t i = 0; i < h.num_buckets; i++){
-		if(bit_field_get(h.is_full, i)) func(h.data[i]);
+		int is_full = bit_field_get(*h.is_full, i);
+		if(is_full == -1); // TODO: error
+		if(is_full == 1) func(h.data[i]);
 	}
 }

@@ -12,10 +12,10 @@ typedef struct BIT_FIELD {
 } BitField;
 
 
-BitField bit_field_new(size_t size);
-void bit_field_free(BitField b);
-bool bit_field_get(BitField b, size_t index);
-void bit_field_set(BitField* b, size_t index, bool val);
-void bit_field_clear(BitField* b, size_t size);
+BitField* bit_field_new(size_t size);
+void bit_field_free(BitField* b);
+int bit_field_get(BitField b, size_t index);
+int bit_field_set(BitField* b, size_t index, bool val);
+int bit_field_clear(BitField* b, size_t size);
 
 #endif

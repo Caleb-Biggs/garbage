@@ -27,7 +27,7 @@ typedef struct MEMORY_ARRAY {
 	uint64_t last;
 	uint64_t size;
 	uint64_t max_size;
-	BitField marks;
+	BitField* marks;
 	MemCont* data;
 } MemArr;
 
