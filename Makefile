@@ -10,7 +10,7 @@ OBJS := src/types.o src/memory.o #src/hashset.o src/bitfield.o src/arena.o src/g
 TEST_LIBS := check
 TEST_EXEC := tests/tests
 TEST_MAIN := tests/tests.o
-TEST_OBJS := tests/bitfield_tests.o tests/hashset_tests.o
+TEST_OBJS := tests/arena_tests.c #tests/bitfield_tests.o tests/hashset_tests.o
 
 $(EXEC): $(MAIN) $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $(EXEC) $(MAIN) $(OBJS) $(LIBS)

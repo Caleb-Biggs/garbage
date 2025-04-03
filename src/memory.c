@@ -68,16 +68,26 @@ void* arena_get_data(Arena* a, size_t index){
 }
 
 
-bool arena_index_from_pointer(Arena* a, void* pointer, size_t** output){
-	if(pointer < a->data || 
-		pointer > (void*)((uint8_t*)(a->data)+(a->data_size*(a->max_items-1)))
-	) return (*output = NULL);
+int arena_index_from_pointer(Arena* a, void* pointer, size_t** output){
+	size_t offset;
+	int err = 0;
+	if(!a) err = -1;
+	else if(!output) return -2;
+	else if(!(*output)) err = -3;
+	else if(pointer < a->data) err = -4;
+	else if(pointer > (void*)((uint8_t*)(a->data)+(a->data_size*(a->max_items-1))))
+		err = -5;
+	else if((offset = (size_t)pointer - (size_t)a->data) % a->data_size != 0)
+		err = -6;
+	
+	if(err < 0){
+		*output = NULL;
+		return err;
+	}
 
-	**output = (size_t)pointer - (size_t)a->data;
-	if(**output % a->data_size != 0) return (*output = NULL);
-	**output /= a->data_size;
-
-	return true;
+	offset /= a->data_size;
+	**output = offset;
+	return err;
 }
 
 

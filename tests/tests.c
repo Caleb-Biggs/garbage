@@ -2,11 +2,12 @@
 #include <stdio.h>  
 #include <stdlib.h>
 #include <stdio.h>
-#include "bitfield_tests.c"
-#include "hashset_tests.c"
+#include "arena_tests.c"
+// #include "bitfield_tests.c"
+// #include "hashset_tests.c"
 
 
-#define MAX_SUITES 2
+#define MAX_SUITES 1
 int parse_args(Suite** suites, int argc, char const* argv[]){
 	if(argc == 1) return -1;
 	if(argc > MAX_SUITES+1) return -2;
@@ -15,8 +16,9 @@ int parse_args(Suite** suites, int argc, char const* argv[]){
 	for(int i = 1; i < argc; i++){
 		if(argv[i][0] != '-') continue;
 		switch(argv[i][1]){
-			case 'b': suites[num_valid_args++] = bitfield_suite(); break;
-			case 'h': suites[num_valid_args++] = hashset_suite(); break;
+		case 'a': suites[num_valid_args++] = arena_suite(); break;
+			// case 'b': suites[num_valid_args++] = bitfield_suite(); break;
+			// case 'h': suites[num_valid_args++] = hashset_suite(); break;
 			// case 'n': suites[num_valid_args++] = (); break;
 			// case 'a': suites[num_valid_args++] = (); break;
 			// case 'g': suites[num_valid_args++] = (); break;
@@ -30,8 +32,9 @@ int main(int argc, char const* argv[]){
 	Suite* suites[MAX_SUITES] = {0};
 	int num_suites = parse_args(suites, argc, argv);
 	if(num_suites == -1){
-		suites[0] = bitfield_suite();
-		suites[1] = hashset_suite();
+		suites[0] = arena_suite();
+		// suites[0] = bitfield_suite();
+		// suites[1] = hashset_suite();
 		// suites[2] = ();
 		// suites[3] = ();
 		// suites[4] = ();
