@@ -1,11 +1,11 @@
 CC := gcc
 CFLAGS := -Werror -Wall -Wpedantic -g #-Wextra
-HEADERS := src/hashset.h src/shared.h src/bitfield.h src/arena.h src/garbage.h src/node.h
+HEADERS := src/types.h src/memory.h#src/hashset.h src/shared.h src/bitfield.h src/arena.h src/garbage.h src/node.h
 
 LIBS := -lm
 EXEC := out
 MAIN := src/main.o 
-OBJS := src/hashset.o src/bitfield.o src/arena.o src/garbage.o src/node.o
+OBJS := src/types.o src/memory.o #src/hashset.o src/bitfield.o src/arena.o src/garbage.o src/node.o
 
 TEST_LIBS := check
 TEST_EXEC := tests/tests
