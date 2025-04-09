@@ -63,10 +63,10 @@ void* meta_arena_allocate(MetaArena* m, TypeIndex t){
 }
 
 
-void meta_arena_delete_marked(MetaArena* m){
+void meta_arena_delete_unmarked(MetaArena* m){
 	// Delete all marked data
 	for(size_t i = 0; i < m->num_arenas; i++)
-		arena_delete_marked(m->arenas+i);
+		arena_delete_unmarked(m->arenas+i);
 
 	// Remove empty arenas
 	size_t offset = 0;

@@ -18,8 +18,31 @@ struct_setup(TREE, Tree,
 	type_memb(Tree, right)
 )
 
+void char_print(void* item){
+	printf("%c\n", *(char*)item);
+}
 
-void type_info(){
+void int_print(void* item){
+	printf("%i\n", *(int*)item);
+}
+
+void array(){
+	Array* a = array_new(TYPE_CHAR(), 5);
+	for(int i = 0; i < 5; i++){
+		*(char*)array_get(*a, i) = 'A'+i;
+	}
+	array_for_each(*a, 10, char_print);
+
+	Array* b = array_new(TYPE_INT(), 5);
+	for(int i = 0; i < 5; i++){
+		*(int*)array_get(*b, i) = -i;
+	}
+	array_resize(b, 3);
+	array_for_each(*b, 10, int_print);
+}
+
+
+void garbage(){
 	// printf("Pointer arr: %lu\n", TYPE_POINTER_ARR().index);
 	start_garbage_collector();
 
@@ -60,58 +83,21 @@ void type_info(){
 	start_function();
 	start_function();
 	char* c = gc_alloc(TYPE_CHAR());
-	run_garbage_collection();
 	end_function(c);
 	end_function(c);
 	end_function(c);
 	end_function(c);
 
+	run_garbage_collection();
 	graph_print_memory();
 
 
-	end_garbage_collector();//0x4a552e8 //0x4a53ef0
+
+	end_garbage_collector();
 }
 
 
-// void garbage(){
-// 	start_garbage_collection();
-
-
-// 		start_function();
-
-// 		char* str = "abcdefghijklmnopqrstuvwxyz";
-// 		for(int i = 0; i < 100; i++){
-// 			MemLoc l = gc_alloc(sizeof(char));
-// 			*(char*)get(l) = str[i%26];
-// 		}
-
-// 		MemLoc arr = gc_alloc(sizeof(int)*10);
-// 		for(int i = 0; i < 10; i++){
-// 			((int*)get(arr))[i] = i*i;
-// 		}
-
-// 		print_graph();
-// 		collect_garbage();
-// 		print_graph();
-
-// 		// attach(l1, l2);
-// 		// print_graph();
-// 		// detach(l1, l2);
-
-// 		end_function(&arr);
-	
-// 	collect_garbage();
-// 	print_graph();
-// 	// MemLoc l1 = gc_alloc(sizeof(char));
-// 	// *(char*)get(l1) = 'C';
-// 	// print_graph();
-
-
-// 	end_garbage_collection();
-// }
-
-
 int main(void){
-	// garbage();
-	type_info();
+	garbage();
+	// array();
 }

@@ -28,14 +28,8 @@ void arena_free(Arena* a){
 	if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz){
 		for(size_t i = 0; i < a->last; i++){
 			Metadata* m = arena_get_metadata(a, i);
-			// if(m->label == DATA && m->type.index == TYPE_POINTER().index){
-			if(m->label == DATA && 
-				(m->type.index == TYPE_POINTER_ARR().index || 
-				m->type.index == TYPE_POINTER().index)
-			){
+			if(m->label == DATA && m->type.index == TYPE_POINTER().index){
 				free(*(void**)arena_get_data(a, i));
-				// printf("%p\n", arena_get_data(a, i));
-				// printf("%p\n", *(void**)arena_get_data(a, i));
 			}
 		}	
 	}
@@ -68,10 +62,20 @@ void arena_mark_for_deletion(Arena* a, size_t index){
 }
 
 
-void arena_delete_marked(Arena* a){
+void arena_delete_unmarked(Arena* a){
 	for(size_t i = 0; i < a->last; i++){
 		Metadata* m = arena_get_metadata(a, i);
-		if(!m->mark) continue;
+		if(m->mark){
+			m->mark = false;
+			continue;
+		}
+		
+		// Special case for pointers to arbitrarily sized data
+		if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz
+			&& m->label == DATA 
+			&& m->type.index == TYPE_POINTER().index
+		)free(*(void**)arena_get_data(a, i));
+		
 		*m = (Metadata){
 			.mark = false, 
 			.label = INDEX, 
@@ -118,12 +122,6 @@ void arena_print(Arena* a){
 			printf("Mark: %i\n", m->mark);
 			printf("Type: %lu\n", m->type.index);
 			printf("Pointer: %p\n", arena_get_data(a, i));
-			// if(a->data_size == 1)
-			// 	printf("Data: %c\n", *(char*)arena_get_data(a, i));
-			// else if(a->data_size == 4)
-			// 	printf("Data: %i\n", *(int*)arena_get_data(a, i));
-			// else if(a->data_size == 8)
-			// 	printf("Data: %li\n", *(int64_t*)arena_get_data(a, i));
 		} else {
 			printf("Label: INDEX\n");
 			printf("Mark: %i\n", m->mark);

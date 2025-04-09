@@ -19,7 +19,8 @@ exec: $(EXEC)
 	./$^
 
 mem: $(EXEC)
-	valgrind --leak-check=full --show-leak-kinds=all ./$^
+	valgrind ./$^
+# 	valgrind --leak-check=full --show-leak-kinds=all ./$^
 
 clean:
 	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)

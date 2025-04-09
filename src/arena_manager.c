@@ -43,9 +43,9 @@ void* manager_allocate(ArenaManager* a, TypeIndex t){
 }
 
 
-void manager_delete_marked(ArenaManager a){
+void manager_delete_unmarked(ArenaManager a){
 	for(size_t i = 0; i <= a.largest; i++)
-		meta_arena_delete_marked(a.arena_size+i);
+		meta_arena_delete_unmarked(a.arena_size+i);
 }
 
 

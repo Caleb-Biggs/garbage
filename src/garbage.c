@@ -4,10 +4,10 @@
 
 typedef struct FUNCTION {
 	size_t num_children;
-	Array children;
+	Array* children;
 } Function;
 struct_setup(FUNCTION, Function, 
-	type_memb(Function, children.data)
+	type_memb(Function, children)
 )
 
 void function_push(Function* f, void* child);
@@ -45,83 +45,69 @@ void end_garbage_collector(){
 
 
 void start_function(){
-	// printf("Start %s\n", __func__);
-	Array children = array_new_pnt(2);
+	Array* children = array_new(TYPE_POINTER(), 3);
 	Function* func = gc_alloc(TYPE_FUNCTION());
 	func->children = children;
 	list_push(&context, func);
-	// printf("End %s\n", __func__);
 }
 
 
 void end_function(void* ret){
-	// printf("Start %s\n", __func__);
 	List* popped = list_pop(&context);
 	Function* func_a = popped->func;
-	// printf("Context Popped: %p\n", (void*)func_a);
 	Function* func_b = function_pop(context->func);
-	// printf("Function Popped: %p\n", (void*)func_b);
+	function_pop(context->func);
+	function_pop(context->func);
 	if(func_a != func_b) printf("AHHHHHH\n");
-	free(popped);
-	
-	if(ret == NULL) {
-		// printf("End %s\n", __func__);
-		return;
-	}
+	free(popped);	
+	if(ret == NULL) return;
 	function_push(context->func, ret);
-	// printf("End %s\n", __func__);
 }
 
 
 void* gc_alloc(TypeIndex t){
-	// printf("Start %s\n", __func__);
 	void* output = manager_allocate(&memory, t);
 	if(root != NULL) function_push(context->func, output);
-	// printf("End %s\n", __func__);
 	return output;
 }
 
 
-void** gc_alloc_array(TypeIndex t, size_t num, bool is_pointer){
-	// printf("Start %s\n", __func__);
-	void** arr = gc_alloc((is_pointer) ? TYPE_POINTER_ARR() : TYPE_POINTER());
-	// printf("ARRAY: %p; is_pointer: %s\n", (void*)arr, (is_pointer) ? "true" : "false");
+void* gc_alloc_array(TypeIndex t, size_t num){
+	void** arr = gc_alloc(TYPE_POINTER());
 	if(!arr) return NULL;
 	*arr = calloc(num, type_get_info(t)->struct_sz);
-	// printf("gc_alloc_array: %p\n", *arr);
-	// printf("End %s\n", __func__);
+	// printf("Manual alloc: %p\n", *arr);
 	return arr;
 }
 
 // Garbage Collector
 
+
 void graph_traversal(void* node){
 	Metadata* m = metadata_get(node);
 	if(m->mark) return;
-	printf("Checking: %p\n", node);
 	m->mark = true;
 	TypeInfo t = *type_get_info(m->type);
-	// printf("Pointer: %p; TYPE: %lu\n", node, m->index);
-	if(m->type.index == TYPE_FUNCTION().index){
-		printf("POINTER ARR\n");
-		Function* func = node;
-		printf("num_children: %lu\n", func->num_children);
-		for(size_t i = 0; i < func->num_children; i++){
-			if(func->children.data[i] == NULL) break;
-			printf("POINTER: %p\n", *(void**)(func->children.data[i]));
-			// graph_traversal(*(void**)func->children.data[i]);
-		}
-	}
+	
 	for(size_t i = 0; i < t.num_memb; i++){
 		graph_traversal(*(void**)((uint8_t*)node + (uint64_t)t.members[i]));
 	}
-
+	
+	if(m->type.index == TYPE_ARRAY().index){
+		Array* a = node;
+		if(a->type.index == TYPE_POINTER().index){
+			for(size_t i = 0; i < a->len; i++){
+				if(*(*(void***)a->data + i) == NULL) break;
+				graph_traversal(*(*(void***)a->data + i));
+			}
+		}
+	}
 }
 
 
 void run_garbage_collection(){
 	graph_traversal(root);
-	// manager_delete_marked(memory);
+	manager_delete_unmarked(memory);
 }
 
 // Debug Functions
@@ -133,21 +119,20 @@ void graph_print_memory(){
 //
 
 void function_push(Function* f, void* child){
-	if(f->num_children >= f->children.len)
-		array_resize(&f->children, 2*(f->num_children));
-	// printf("Push: %p\n", (void*)((void**)(*f->children.data)+f->num_children));
-	printf("Pushing %p\n", child);
-	*(void**)array_get(f->children, f->num_children) = child;
-	// *((void**)(*f->children.data)+f->num_children) = child;
-	// ((void**)f->children.data)[f->num_children] = child;
+	// printf("%s: START\n", __func__);
+	if(f->num_children >= f->children->len) array_resize(f->children, 2*f->num_children);
+	// printf("Pushing %p to %p\n", child, (void*)((void**)(*(void**)f->children->data)+f->num_children));
+	*((void**)(*(void**)f->children->data)+f->num_children) = child;
+	// *(void**)array_get(*f->children, f->num_children) = child;
 	f->num_children++;
+	// printf("%s: END\n", __func__);
 }
 
 
 void* function_pop(Function* f){
 	f->num_children--;
-	// void* output = ((void**)f->children.data)[f->num_children];
-	void* output = *(void**)array_get(f->children, f->num_children);
+	void* output = *((void**)(*(void**)f->children->data)+f->num_children);
+	*((void**)(*(void**)f->children->data)+f->num_children) = NULL;
 	return output;
 }
 

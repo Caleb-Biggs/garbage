@@ -21,7 +21,7 @@ typedef struct ARENA {
 int arena_new(size_t data_size, Arena* output);
 void arena_free(Arena* a);
 bool arena_insert(Arena* a, size_t** output, TypeIndex t);
-void arena_delete_marked(Arena* a);
+void arena_delete_unmarked(Arena* a);
 void* arena_get_data(Arena* a, size_t index);
 Metadata* arena_get_metadata(Arena* a, size_t index);
 bool arena_is_full(Arena a);

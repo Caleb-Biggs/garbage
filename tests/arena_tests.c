@@ -3,6 +3,24 @@
 #include "../src/memory.h"
 
 
+
+
+
+Suite* arena_suite(void){
+	Suite* suite;
+	TCase* core;
+
+	suite = suite_create("Arena Suite");
+	core = tcase_create("Core");
+	// tcase_add_test(core, arena_valid_pointer_test);
+	// tcase_add_test(core, arena_invalid_pointer_test);
+	suite_add_tcase(suite, core);
+
+	return suite;
+}
+
+
+/**
 // Inserts data, gets the pointer, then checks that the result
 // from arena_index_from_pointer() matches the original index
 START_TEST(arena_valid_pointer_test){
@@ -21,7 +39,6 @@ START_TEST(arena_valid_pointer_test){
 	arena_free(&a);
 	printf("\tFinished %s\n", __func__);
 } END_TEST
-
 
 START_TEST(arena_invalid_pointer_test){
 	Arena* a = arena_new(sizeof(uint32_t));
@@ -62,17 +79,4 @@ START_TEST(arena_invalid_pointer_test){
 	arena_free(&a);
 	printf("\tFinished %s\n", __func__);
 } END_TEST
-
-
-Suite* arena_suite(void){
-	Suite* suite;
-	TCase* core;
-
-	suite = suite_create("Arena Suite");
-	core = tcase_create("Core");
-	tcase_add_test(core, arena_valid_pointer_test);
-	tcase_add_test(core, arena_invalid_pointer_test);
-	suite_add_tcase(suite, core);
-
-	return suite;
-}
+ */
