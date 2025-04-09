@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "shared.h"
+// #include "shared.h"?
 
 #define BIT_FILED_TYPE uint8_t
 typedef struct BIT_FIELD {

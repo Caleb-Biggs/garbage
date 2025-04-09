@@ -25,3 +25,23 @@ TypeInfo* type_get_info(TypeIndex t){
 	if(t.index >= next_index || !types) return NULL;
 	return types+t.index;
 }
+
+
+void type_free(){
+	for(size_t i = 0; i < next_index; i++)
+		free(types[i].members);
+	free(types);
+}
+
+
+primitive_setup(POINTER, void*)
+primitive_setup(BOOL, bool)
+primitive_setup(CHAR, char)
+primitive_setup(INT, int)
+primitive_setup(FLOAT, float)
+primitive_setup(DOUBLE, double)
+primitive_setup(LONG_DOUBLE, long double)
+primitive_setup(INT8, int8_t)
+primitive_setup(INT16, int16_t)
+primitive_setup(INT32, int32_t)
+primitive_setup(INT64, int64_t)
