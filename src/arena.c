@@ -67,6 +67,7 @@ void arena_mark_for_deletion(Arena* a, size_t index){
 void arena_delete_unmarked(Arena* a){
 	for(size_t i = 0; i < a->last; i++){
 		Metadata* m = arena_get_metadata(a, i);
+		if(m->label != DATA) continue;
 		if(m->mark){
 			m->mark = false;
 			continue;
@@ -79,7 +80,7 @@ void arena_delete_unmarked(Arena* a){
 		)free(*(void**)arena_get_data(a, i));
 		
 		*m = (Metadata){
-			.mark = true, 
+			.mark = false, 
 			.label = INDEX, 
 			.index = a->empty
 		};

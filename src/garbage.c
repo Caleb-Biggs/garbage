@@ -55,6 +55,7 @@ int start_garbage_collector(){
 
 void end_garbage_collector(){
 	pthread_mutex_lock(&mutex);
+	graph_print_memory();
 	running = false;
 	pthread_mutex_unlock(&mutex);
 	pthread_join(collector, NULL);
