@@ -2,9 +2,6 @@
 #define GARBAGE_H
 
 #include "types.h"
-#include "metadata.h"
-#include "arena_manager.h"
-#include "array.h"
 
 int start_garbage_collector();
 void end_garbage_collector();

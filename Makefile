@@ -1,11 +1,11 @@
 CC := gcc
 CFLAGS := -Werror -Wall -Wpedantic -g -O2#-Wextra
-HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/metadata.h src/garbage.h src/array.h
+HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/metadata.h src/garbage.h
 
 LIBS := -lm
 EXEC := out
 MAIN := src/main.o 
-OBJS := src/types.o src/arena.o src/meta_arena.o src/arena_manager.o src/metadata.o src/garbage.o src/array.o
+OBJS := src/types.o src/arena.o src/meta_arena.o src/arena_manager.o src/metadata.o src/garbage.o
 
 TEST_LIBS := check
 TEST_EXEC := tests/tests
@@ -19,8 +19,7 @@ exec: $(EXEC)
 	./$^
 
 mem: $(EXEC)
-	valgrind ./$^
-# 	valgrind --leak-check=full --show-leak-kinds=all ./$^
+	valgrind --leak-check=full --show-leak-kinds=all ./$^
 
 clean:
 	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)

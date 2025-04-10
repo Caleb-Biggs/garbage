@@ -18,6 +18,5 @@ typedef struct METADATA {
 
 
 Metadata* metadata_get(void* data);
-void metadata_mark_delete(void* data);
 
 #endif

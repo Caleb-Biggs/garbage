@@ -1,12 +1,7 @@
 // #include "garbage.h" 
 #include <stdio.h>
 #include <stdint.h>
-#include "types.h"
-#include "arena.h"
-#include "meta_arena.h"
-#include "arena_manager.h"
 #include "garbage.h"
-#include "array.h"
 
 
 typedef struct TREE {
@@ -18,27 +13,9 @@ struct_setup(TREE, Tree,
 	type_memb(Tree, right)
 )
 
-void char_print(void* item){
-	printf("%c\n", *(char*)item);
-}
-
-void int_print(void* item){
-	printf("%i\n", *(int*)item);
-}
 
 void array(){
-	Array* a = array_new(TYPE_CHAR(), 5);
-	for(int i = 0; i < 5; i++){
-		*(char*)array_get(*a, i) = 'A'+i;
-	}
-	array_for_each(*a, 10, char_print);
 
-	Array* b = array_new(TYPE_INT(), 5);
-	for(int i = 0; i < 5; i++){
-		*(int*)array_get(*b, i) = -i;
-	}
-	array_resize(b, 3);
-	array_for_each(*b, 10, int_print);
 }
 
 

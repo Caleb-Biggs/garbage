@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "garbage.h"
+#include "metadata.h"
+#include "arena_manager.h"
 
 
 typedef struct FUNCTION {
@@ -119,13 +121,9 @@ void graph_print_memory(){
 //
 
 void function_push(Function* f, void* child){
-	// printf("%s: START\n", __func__);
 	if(f->num_children >= f->children->len) array_resize(f->children, 2*f->num_children);
-	// printf("Pushing %p to %p\n", child, (void*)((void**)(*(void**)f->children->data)+f->num_children));
 	*((void**)(*(void**)f->children->data)+f->num_children) = child;
-	// *(void**)array_get(*f->children, f->num_children) = child;
 	f->num_children++;
-	// printf("%s: END\n", __func__);
 }
 
 

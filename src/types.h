@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define TYPE_INIT_SIZE 4
+#define TYPE_INIT_RATIO 2
+
 typedef struct TYPE_INDEX {
 	size_t index;
 } TypeIndex;
@@ -14,12 +17,19 @@ typedef struct TYPE_INFO {
 	void** members;
 } TypeInfo;
 
-#define TYPE_INIT_SIZE 4
-#define TYPE_INIT_RATIO 2
+typedef struct ARRAY {
+	TypeIndex type;
+	size_t len;
+	void* data;
+} Array;
 
 TypeIndex type_init(size_t struct_sz, size_t num_memb, void** members);
 TypeInfo* type_get_info(TypeIndex t);
 void type_free();
+
+Array* array_new(TypeIndex t, size_t len);
+void* array_get(Array a, size_t index);
+void array_resize(Array* a, size_t len);
 
 #define type_memb(type, mem) (void*)(&((type*)0)->mem)
 
@@ -53,6 +63,8 @@ void type_free();
 	}													\
 	type_setup(NAME)
 
+TypeIndex INIT_ARRAY();
+TypeIndex TYPE_ARRAY();
 TypeIndex INIT_POINTER();
 TypeIndex TYPE_POINTER();
 TypeIndex INIT_BOOL();

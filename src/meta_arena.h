@@ -2,7 +2,6 @@
 #define META_ARENA_H
 
 #include "arena.h"
-// #include "types.h"
 
 #define STARTING_ARENAS 0
 #define META_ARENA_RESIZE 1.5
