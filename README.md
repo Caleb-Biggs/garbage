@@ -1,6 +1,6 @@
 ## About
 This is a garbage collector, written in C.  
-This program currently only supports being run in a single-threaded application and currently does not garbage collect automatically.  
+This program currently only supports being run in a single-threaded application.  
 The main goal of this program is to eventually be used in a programming language I plan to create at some point, so usability by a human programmer is not my top priority, instead it'll be inserted into a program at compile time.
 
 ## Usage
@@ -40,7 +40,6 @@ char* first_n_letters(int n){
 	return str;
 }
 ```
-For now, garbage collection is done manually by calling ```run_garbage_collection()```, soon the garbage collector will run on its own thread and be done automatically.  
 The garbage collector recognizes a number of primitive types, all with the `TYPE_` prefix, along with the Array type (`TYPE_ARRAY`). For a full list of types included, see `src/types.h`. To declare a new type, there are a few macros provided:
 ```C
 typedef enum ERROR { 
@@ -81,7 +80,7 @@ int main(int argc, char* argv[]){
 ## Future
 - Get garbage collection working (Complete)
 - Simplify interface (Complete)
+- Put garbage collector on its own thread (Probably complete)
 - Improve error handling (In-progress)
 - Write tests (In-progress)
-- Put garbage collector on its own thread (Not started)
 - Make allocation thread-safe (Not started)
