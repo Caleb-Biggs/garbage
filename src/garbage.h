@@ -13,6 +13,6 @@ void* gc_alloc_array(TypeIndex t, size_t num);
 // Debug
 void graph_print_memory();
 void graph_print();
-void run_garbage_collection();
+void* run_garbage_collection(void* _);
 
 #endif

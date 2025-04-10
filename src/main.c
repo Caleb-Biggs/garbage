@@ -1,6 +1,7 @@
 // #include "garbage.h" 
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 #include "garbage.h"
 
 
@@ -65,8 +66,9 @@ void garbage(){
 	end_function(c);
 	end_function(c);
 
-	run_garbage_collection();
-	graph_print_memory();
+	usleep(1000000);
+	// run_garbage_collection();
+	// graph_print_memory();
 
 
 

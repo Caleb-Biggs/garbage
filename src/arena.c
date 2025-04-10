@@ -79,7 +79,7 @@ void arena_delete_unmarked(Arena* a){
 		)free(*(void**)arena_get_data(a, i));
 		
 		*m = (Metadata){
-			.mark = false, 
+			.mark = true, 
 			.label = INDEX, 
 			.index = a->empty
 		};
