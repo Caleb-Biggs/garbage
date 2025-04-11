@@ -6,6 +6,7 @@
 
 
 typedef struct TREE {
+	int val;
 	struct TREE* left;
 	struct TREE* right;
 } Tree;
@@ -15,7 +16,53 @@ struct_setup(TREE, Tree,
 )
 
 
-void array(){
+Tree* tree_gc_insert(Tree** t, int val){
+	if(!t) return NULL;
+	start_function();
+	
+	if(*t == NULL){
+		*t = gc_alloc(TYPE_TREE());
+		(**t).val = val;
+		end_function(*t);
+		return *t;
+	}
+
+	Tree* new = NULL;
+	if(val < (**t).val){
+		new = tree_gc_insert(&(**t).left, val);
+	} else if(val > (**t).val){
+		new = tree_gc_insert(&(**t).right, val);
+	}
+
+	end_function(new);
+	return new;
+}
+
+
+void tree_gc(){
+	start_garbage_collector();
+
+	start_function();
+		Tree* t = NULL;
+		const int size = 13000;
+		// Array* inserted = gc_alloc_array(TYPE_INT(), size);
+		// printf("Array: %p\n", inserted->data);
+
+		for(int i = 0; i < size; i++){
+			// *((int*)(*(void**)(inserted->data))+i) = i;
+			tree_gc_insert(&t, i);
+		}
+
+
+	end_function(NULL);
+	
+	// usleep(1000000); // 1s
+
+	end_garbage_collector();
+}
+
+
+void tree_manual(){
 
 }
 
@@ -61,22 +108,19 @@ void garbage(){
 	start_function();
 	start_function();
 	char* c = gc_alloc(TYPE_CHAR());
+	graph_print_memory();
 	end_function(c);
 	end_function(c);
 	end_function(c);
 	end_function(c);
 
 	usleep(1000000);
-	// run_garbage_collection();
-	// graph_print_memory();
-
-
-
 	end_garbage_collector();
 }
 
 
 int main(void){
-	garbage();
-	// array();
+	// garbage();
+	tree_gc();
+	// tree_manual();
 }

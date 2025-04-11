@@ -76,15 +76,8 @@ void array_for_each(Array a, ssize_t num, void (*func)(void*)){
 
 
 void array_resize(Array* a, size_t len){
-	printf("RESIZE\n");
-	size_t old_len = a->len;
-	a->len = len;
-
-	void* new_data = gc_alloc_array(a->type, len);
-	
-	size_t bytes = type_get_info(a->type)->struct_sz 
-		* ((len<old_len) ? len: old_len);
-	a->data = memcpy(new_data, a->data, bytes);
+	// printf("RESIZE\n");
+	gc_realloc_array(a, len);
 }
 
 

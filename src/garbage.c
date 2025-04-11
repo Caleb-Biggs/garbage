@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <unistd.h>
 #include "garbage.h"
@@ -41,7 +42,8 @@ int start_garbage_collector(){
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&mutex, &attr);
 	pthread_mutex_lock(&mutex);
-	pthread_create(&collector, NULL, run_garbage_collection, NULL);
+	int thr = pthread_create(&collector, NULL, run_garbage_collection, NULL);
+	if(thr != 0) printf("pthread_create result: %i\n", thr);
 
 	running = true;
 	int ret = manager_new(&memory);
@@ -55,7 +57,7 @@ int start_garbage_collector(){
 
 void end_garbage_collector(){
 	pthread_mutex_lock(&mutex);
-	graph_print_memory();
+	// graph_print_memory();
 	running = false;
 	pthread_mutex_unlock(&mutex);
 	pthread_join(collector, NULL);
@@ -69,7 +71,7 @@ void end_garbage_collector(){
 
 void start_function(){
 	pthread_mutex_lock(&mutex);
-	Array* children = array_new(TYPE_POINTER(), 3);
+	Array* children = array_new(TYPE_POINTER(), 2);
 	Function* func = gc_alloc(TYPE_FUNCTION());
 	func->children = children;
 	list_push(&context, func);
@@ -105,14 +107,47 @@ void* gc_alloc_array(TypeIndex t, size_t num){
 	void** arr = gc_alloc(TYPE_POINTER());
 	if(!arr) return NULL;
 	*arr = calloc(num, type_get_info(t)->struct_sz);
+	// printf("Manually allocating %p at %p\n", *arr, (void*)arr);
 	pthread_mutex_unlock(&mutex);
 	return arr;
 }
+
+
+void gc_realloc_array(Array* a, size_t num){
+	pthread_mutex_lock(&mutex);
+	size_t size = type_get_info(a->type)->struct_sz;
+	*(void**)a->data = realloc(*(void**)a->data, num*size);
+	
+	if(num > a->len) memset(
+		*(uint8_t**)a->data + (a->len * size), 
+		0, (num-a->len) * size
+	);
+	
+	a->len = num;
+	// printf("Manually reallocating %p at %p\n", *(void**)a->data, a->data);
+	pthread_mutex_unlock(&mutex);
+}
+
+// Array* gc_alloc_array(TypeIndex t, size_t num){
+// 	pthread_mutex_lock(&mutex);
+
+// 	Array* a = gc_alloc(TYPE_ARRAY());
+// 	void** pnt = gc_alloc(TYPE_POINTER());
+// 	*pnt = calloc(num, type_get_info(t)->struct_sz);
+
+// 	a->type = t;
+// 	a->num = num;
+// 	a->data = pnt;
+
+// 	pthread_mutex_unlock(&mutex);
+// 	return a;
+// }
 
 // Garbage Collector
 
 
 void graph_traversal(void* node){
+	if(!node) return;
 	Metadata* m = metadata_get(node);
 	if(m->mark) return;
 	m->mark = true;
@@ -138,8 +173,10 @@ void* run_garbage_collection(void* _){
 	while(running){
 		usleep(100000); // 100ms
 		pthread_mutex_lock(&mutex);
+		// printf("STARTING GARBAGE COLLECTION\n");
 		graph_traversal(root);
 		manager_delete_unmarked(memory);
+		// printf("ENDING GARBAGE COLLECTION\n");
 		pthread_mutex_unlock(&mutex);
 	}
 	return NULL;
@@ -148,7 +185,9 @@ void* run_garbage_collection(void* _){
 // Debug Functions
 
 void graph_print_memory(){
+	pthread_mutex_lock(&mutex);
 	manager_print(memory);
+	pthread_mutex_unlock(&mutex);
 }
 
 //
