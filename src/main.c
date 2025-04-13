@@ -16,17 +16,25 @@ struct_setup(TREE, Tree,
 )
 
 
+// Tree* tree_gc_insert_iter(Tree** t, int val){
+// 	if(!t) return;
+// }
+
+
 Tree* tree_gc_insert(Tree** t, int val){
 	if(!t) return NULL;
 	start_function();
 	
 	if(*t == NULL){
+		// printf("NULL\n");
 		*t = gc_alloc(TYPE_TREE());
+		// printf("Tree: %p\n", (void*)(*t));
 		(**t).val = val;
 		end_function(*t);
 		return *t;
 	}
 
+	// printf("T %p\n", (void*)*t);
 	Tree* new = NULL;
 	if(val < (**t).val){
 		new = tree_gc_insert(&(**t).left, val);
@@ -43,21 +51,21 @@ void tree_gc(){
 	start_garbage_collector();
 
 	start_function();
+		const int tests = 12000;
+		// const int tests = 10;
 		Tree* t = NULL;
-		const int size = 13000;
-		// Array* inserted = gc_alloc_array(TYPE_INT(), size);
-		// printf("Array: %p\n", inserted->data);
-
-		for(int i = 0; i < size; i++){
-			// *((int*)(*(void**)(inserted->data))+i) = i;
+		for(int i = 0; i < tests; i++){
 			tree_gc_insert(&t, i);
+			// usleep(10);
 		}
-
-
 	end_function(NULL);
-	
-	// usleep(1000000); // 1s
 
+	usleep(1000000);
+	// graph_print_memory();
+	// run_garbage_collection(NULL);
+	// printf("----------\n");
+	graph_print_memory();
+	
 	end_garbage_collector();
 }
 

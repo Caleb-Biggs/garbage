@@ -13,6 +13,7 @@ typedef struct ARENA_MANAGER {
 int manager_new(ArenaManager* output);
 void manager_free(ArenaManager* a);
 void* manager_allocate(ArenaManager* a, TypeIndex t);
+void* manager_allocate_arbitrary(ArenaManager* a, TypeIndex t, size_t size);
 void manager_delete_unmarked(ArenaManager a);
 
 // Debug

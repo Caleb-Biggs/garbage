@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Werror -Wall -Wpedantic -O2 #-g #-Wextra
+CFLAGS := -Werror -Wall -Wpedantic -O2 -g #-Wextra
 HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/metadata.h src/garbage.h
 
 LIBS := -lm
@@ -19,7 +19,8 @@ exec: $(EXEC)
 	./$^
 
 mem: $(EXEC)
-	cpulimit -l 80 -- valgrind --leak-check=full --show-leak-kinds=all ./$^
+	valgrind --leak-check=full --show-leak-kinds=all ./$^
+# 	cpulimit -l 80 -- valgrind --leak-check=full --show-leak-kinds=all ./$^
 
 clean:
 	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)

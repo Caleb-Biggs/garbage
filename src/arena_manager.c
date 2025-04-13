@@ -29,17 +29,37 @@ void manager_free(ArenaManager* a){
 }
 
 
+int manager_resize(ArenaManager* a, size_t size){
+	a->arena_size = realloc(a->arena_size, (size+1)*sizeof(*(a->arena_size)));
+	for(size_t i = a->largest+1; i <= size; i++){
+		int ret = meta_arena_new(i, a->arena_size+i);
+		if(ret < 0) return ret;
+	}
+	a->largest = size;
+	return 0;
+}
+
+
 void* manager_allocate(ArenaManager* a, TypeIndex t){
 	size_t size = type_get_info(t)->struct_sz;
-	if(size > a->largest){
-		a->arena_size = realloc(a->arena_size, (size+1)*sizeof(*(a->arena_size)));
-		for(size_t i = a->largest+1; i <= size; i++){
-			int ret = meta_arena_new(i, a->arena_size+i);
-			if(ret < 0) return NULL;
-		}
-		a->largest = size;
+	if(size > a->largest) {
+		int ret = manager_resize(a, size);
+		if(ret < 0) return NULL;
 	}
-	return meta_arena_allocate(a->arena_size+size, t);
+	void* output = meta_arena_allocate(a->arena_size+size, t);
+	// printf("manager allocating: %p\n", output);
+	return output;
+}
+
+
+void* manager_allocate_arbitrary(ArenaManager* a, TypeIndex t, size_t size){
+	if(size > a->largest) {
+		int ret = manager_resize(a, size);
+		if(ret < 0) return NULL;
+	}
+	void* output = meta_arena_allocate(a->arena_size+size, t);
+	// printf("manager allocating: %p\n", output);
+	return output;
 }
 
 
@@ -50,6 +70,7 @@ void manager_delete_unmarked(ArenaManager a){
 
 
 void manager_print(ArenaManager a){
+	printf("Largest Arena Size: %lu\n", a.largest);
 	for(size_t i = 0; i <= a.largest; i++){
 		if(a.arena_size[i].num_arenas == 0) continue;
 		printf("Size %lu\n", i);

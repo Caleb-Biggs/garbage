@@ -21,6 +21,7 @@ typedef struct META_ARENA {
 int meta_arena_new(size_t data_size, MetaArena* output);
 void meta_arena_free(MetaArena* m);
 void* meta_arena_allocate(MetaArena* m, TypeIndex t);
+void* meta_arena_allocate_arbitrary(MetaArena* m, size_t size);
 void meta_arena_delete_unmarked(MetaArena* m);
 
 // Debug

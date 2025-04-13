@@ -27,14 +27,14 @@ int arena_new(size_t data_size, Arena* output){
 void arena_free(Arena* a){
 	if(!a) return;
 	// Special case for pointers to arbitrarily sized data
-	if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz){
-		for(size_t i = 0; i < a->last; i++){
-			Metadata* m = arena_get_metadata(a, i);
-			if(m->label == DATA && m->type.index == TYPE_POINTER().index){
-				free(*(void**)arena_get_data(a, i));
-			}
-		}	
-	}
+	// if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz){
+	// 	for(size_t i = 0; i < a->last; i++){
+	// 		Metadata* m = arena_get_metadata(a, i);
+	// 		if(m->label == DATA && m->type.index == TYPE_POINTER().index){
+	// 			free(*(void**)arena_get_data(a, i));
+	// 		}
+	// 	}	
+	// }
 	free(a->data);
 	a->data = NULL;
 }
@@ -72,12 +72,12 @@ void arena_delete_unmarked(Arena* a){
 			m->mark = false;
 			continue;
 		}
-		
+		// printf("D %p\n", arena_get_data(a, i));
 		// Special case for pointers to arbitrarily sized data
-		if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz
-			&& m->label == DATA 
-			&& m->type.index == TYPE_POINTER().index
-		)free(*(void**)arena_get_data(a, i));
+		// if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz
+		// 	&& m->label == DATA 
+		// 	&& m->type.index == TYPE_POINTER().index
+		// )free(*(void**)arena_get_data(a, i));
 		
 		*m = (Metadata){
 			.mark = false, 
@@ -118,17 +118,17 @@ void arena_print(Arena* a){
 	printf("Next Empty: %lu\n", a->empty);
 	printf("Last: %lu\n", a->last);
 	printf("Data size: %lu\n", a->data_size);
-	for(int i = 0; i < a->last; i++){
-		Metadata* m = arena_get_metadata(a, i);
-		if(m->label == DATA){
-			printf("Label: DATA\n");
-			printf("Mark: %i\n", m->mark);
-			printf("Type: %lu\n", m->type.index);
-			printf("Pointer: %p\n", arena_get_data(a, i));
-		} else {
-			printf("Label: INDEX\n");
-			printf("Mark: %i\n", m->mark);
-			printf("Index: %lu\n", m->index);
-		}
-	}
+	// for(int i = 0; i < a->last; i++){
+	// 	Metadata* m = arena_get_metadata(a, i);
+	// 	if(m->label == DATA){
+	// 		printf("Label: DATA\n");
+	// 		printf("Mark: %i\n", m->mark);
+	// 		printf("Type: %lu\n", m->type.index);
+	// 		printf("Pointer: %p\n", arena_get_data(a, i));
+	// 	} else {
+	// 		printf("Label: INDEX\n");
+	// 		printf("Mark: %i\n", m->mark);
+	// 		printf("Index: %lu\n", m->index);
+	// 	}
+	// }
 }

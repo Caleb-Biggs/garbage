@@ -67,6 +67,9 @@ TypeIndex INIT_ARRAY();
 TypeIndex TYPE_ARRAY();
 TypeIndex INIT_POINTER();
 TypeIndex TYPE_POINTER();
+TypeIndex INIT_VOID();
+TypeIndex TYPE_VOID();
+
 TypeIndex INIT_BOOL();
 TypeIndex TYPE_BOOL();
 TypeIndex INIT_CHAR();

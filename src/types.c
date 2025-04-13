@@ -48,40 +48,49 @@ struct_setup(ARRAY, Array,
 )
 
 
-Array* array_new(TypeIndex t, size_t len){
-	Array* output = gc_alloc(TYPE_ARRAY());
-	void* arr = gc_alloc_array(t, len);
-	if(!output || !arr) return NULL;
+// Array* array_new(TypeIndex t, size_t len){
+// 	Array* output = gc_alloc(TYPE_ARRAY());
+// 	void* arr = gc_alloc_array(t, len);
+// 	if(!output || !arr) return NULL;
 
-	output->type = t;
-	output->len = len;
-	output->data = arr;
-	return output;
+// 	output->type = t;
+// 	output->len = len;
+// 	output->data = arr;
+// 	return output;
+// }
+
+
+// void* array_get(Array a, size_t index){
+// 	return ((uint8_t*)a.data) + (index * type_get_info(a.type)->struct_sz);
+// }
+
+
+// void array_for_each(Array a, ssize_t num, void (*func)(void*)){
+// 	size_t size = type_get_info(a.type)->struct_sz;
+// 	if(num < 0 || num > a.len) num = a.len;
+// 	num *= size;
+// 	for(size_t i = 0; i < num; i+=size){
+// 		func(((uint8_t*)a.data)+i);
+// 	}
+// }
+
+
+// void array_resize(Array* a, size_t len){
+// 	// printf("RESIZE\n");
+// 	gc_realloc_array(a, len);
+// }
+
+
+TypeIndex INIT_VOID(){
+	return type_init(0, 0, NULL);
 }
+type_setup(VOID)
 
+typedef struct POINTER {
+	void* data;
+} pointer;
+struct_setup(POINTER, pointer, type_memb(pointer, data))
 
-void* array_get(Array a, size_t index){
-	return ((uint8_t*)a.data) + (index * type_get_info(a.type)->struct_sz);
-}
-
-
-void array_for_each(Array a, ssize_t num, void (*func)(void*)){
-	size_t size = type_get_info(a.type)->struct_sz;
-	if(num < 0 || num > a.len) num = a.len;
-	num *= size;
-	for(size_t i = 0; i < num; i+=size){
-		func(((uint8_t*)a.data)+i);
-	}
-}
-
-
-void array_resize(Array* a, size_t len){
-	// printf("RESIZE\n");
-	gc_realloc_array(a, len);
-}
-
-
-primitive_setup(POINTER, void*)
 primitive_setup(BOOL, bool)
 primitive_setup(CHAR, char)
 primitive_setup(INT, int)

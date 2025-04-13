@@ -8,11 +8,13 @@
 // would padding be added anyway?
 typedef struct METADATA {
 	bool mark;
-	enum { DATA, INDEX
+	// bool pointer; // Only used when label is CHUNK
+	enum { DATA, INDEX//, CHUNK
 	} label;
 	union {
-		TypeIndex type;
-		size_t index;
+		TypeIndex type;	// DATA
+		size_t index;	// INDEX
+		// size_t size;	// CHUNK
 	};
 } Metadata;
 

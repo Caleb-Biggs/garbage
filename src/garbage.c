@@ -7,141 +7,113 @@
 #include "arena_manager.h"
 
 
-typedef struct FUNCTION {
-	size_t num_children;
-	Array* children;
-} Function;
-struct_setup(FUNCTION, Function, 
-	type_memb(Function, children)
-)
+typedef struct VECTOR {
+	TypeIndex type;
+	size_t len;
+	size_t cap;
+	uint8_t data[];
+} Vector;
+primitive_setup(VECTOR, Vector)
 
-void function_push(Function* f, void* child);
-void* function_pop(Function* f);
-
-typedef struct MEMORY_LIST {
-	Function* func;
-	struct MEMORY_LIST* next;
-} List;
-
-void list_push(List** l, Function* func);
-List* list_pop(List** l);
-void list_free(List** l);
+Vector** function_new();
+bool function_push(Vector** v, void* item);
+void* function_pop(Vector* v);
+Vector** function_prev(Vector* v);
 
 
 static ArenaManager memory = {0};
-static Function* root = NULL;
-static List* context = NULL;
-static pthread_mutex_t mutex;
+static Vector** root = NULL;
+static Vector** context = NULL;
+static pthread_mutex_t* mutex = NULL;
 static pthread_t collector;
 static bool running = false;
 
 
-int start_garbage_collector(){
-	pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&mutex, &attr);
-	pthread_mutex_lock(&mutex);
-	int thr = pthread_create(&collector, NULL, run_garbage_collection, NULL);
-	if(thr != 0) printf("pthread_create result: %i\n", thr);
+// Interface
 
-	running = true;
+
+int start_garbage_collector(){
+	// Global Setup
 	int ret = manager_new(&memory);
 	if(ret != 0) return ret;
 	start_function();
-	root = context->func;
-	pthread_mutex_unlock(&mutex);
+	root = context;
+	running = true;
+
+	// Thread Setup
+	static pthread_mutex_t mutex_local;
+	mutex = &mutex_local;
+	pthread_mutex_init(mutex, NULL);
+	pthread_mutex_lock(mutex);
+	int thr = pthread_create(&collector, NULL, run_garbage_collection, NULL);
+	if(thr != 0) printf("pthread_create result: %i\n", thr);
+	pthread_mutex_unlock(mutex);
 	return 0;
 }
 
 
 void end_garbage_collector(){
-	pthread_mutex_lock(&mutex);
 	// graph_print_memory();
+	pthread_mutex_lock(mutex);
 	running = false;
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(mutex);
 	pthread_join(collector, NULL);
-
 	manager_free(&memory);
 	type_free();
-	list_free(&context);
-
 }
 
 
 void start_function(){
-	pthread_mutex_lock(&mutex);
-	Array* children = array_new(TYPE_POINTER(), 2);
-	Function* func = gc_alloc(TYPE_FUNCTION());
-	func->children = children;
-	list_push(&context, func);
-	pthread_mutex_unlock(&mutex);
+	if(mutex) pthread_mutex_lock(mutex);
+
+	// printf("start_function: START\n");
+	Vector** func = function_new();
+	function_push(func, context);
+	if(context) function_push(context, func);
+	// else printf("start_function: NULL context\n");
+	context = func;
+	// printf("start_function: END\n");
+
+	if(mutex) pthread_mutex_unlock(mutex);
 }
 
 
 void end_function(void* ret){
-	pthread_mutex_lock(&mutex);
-	List* popped = list_pop(&context);
-	Function* func_a = popped->func;
-	Function* func_b = function_pop(context->func);
-	function_pop(context->func);
-	function_pop(context->func);
-	if(func_a != func_b) printf("AHHHHHH\n");
-	free(popped);	
-	if(ret != NULL) function_push(context->func, ret);
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_lock(mutex);
+
+	// printf("%s: START\n", __func__);
+	Vector** ending = context;
+	if(context) context = function_prev(*context);
+	// else printf("end_function: NULL Context\n"); 
+	
+	Vector** popped = NULL;
+	if(context) popped = function_pop(*context);
+	// else printf("end_function: NULL Context\n");
+	
+	// printf("Popped: %p\n", (void*)popped);
+	if(!popped);// printf("end_function: NULL\n");
+	else if(popped != ending) {
+		printf("AHHHHH\n");
+		printf("Ending: %p; Popped: %p; Next: %p\n", (void*)ending, (void*)popped, (void*)context);
+	}
+	// else printf("end_function: VALID\n");
+	if(ret) function_push(context, ret);
+	// printf("%s: END\n", __func__);
+
+	pthread_mutex_unlock(mutex);
 }
 
 
 void* gc_alloc(TypeIndex t){
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(mutex);
+	// printf("gc_alloc: START\n");
 	void* output = manager_allocate(&memory, t);
-	if(root != NULL) function_push(context->func, output);
-	pthread_mutex_unlock(&mutex);
+	function_push(context, output);
+	// printf("gc_alloc: END\n");
+	pthread_mutex_unlock(mutex);
 	return output;
 }
 
-
-void* gc_alloc_array(TypeIndex t, size_t num){
-	pthread_mutex_lock(&mutex);
-	void** arr = gc_alloc(TYPE_POINTER());
-	if(!arr) return NULL;
-	*arr = calloc(num, type_get_info(t)->struct_sz);
-	// printf("Manually allocating %p at %p\n", *arr, (void*)arr);
-	pthread_mutex_unlock(&mutex);
-	return arr;
-}
-
-
-void gc_realloc_array(Array* a, size_t num){
-	pthread_mutex_lock(&mutex);
-	size_t size = type_get_info(a->type)->struct_sz;
-	*(void**)a->data = realloc(*(void**)a->data, num*size);
-	
-	if(num > a->len) memset(
-		*(uint8_t**)a->data + (a->len * size), 
-		0, (num-a->len) * size
-	);
-	
-	a->len = num;
-	// printf("Manually reallocating %p at %p\n", *(void**)a->data, a->data);
-	pthread_mutex_unlock(&mutex);
-}
-
-// Array* gc_alloc_array(TypeIndex t, size_t num){
-// 	pthread_mutex_lock(&mutex);
-
-// 	Array* a = gc_alloc(TYPE_ARRAY());
-// 	void** pnt = gc_alloc(TYPE_POINTER());
-// 	*pnt = calloc(num, type_get_info(t)->struct_sz);
-
-// 	a->type = t;
-// 	a->num = num;
-// 	a->data = pnt;
-
-// 	pthread_mutex_unlock(&mutex);
-// 	return a;
-// }
 
 // Garbage Collector
 
@@ -150,19 +122,20 @@ void graph_traversal(void* node){
 	if(!node) return;
 	Metadata* m = metadata_get(node);
 	if(m->mark) return;
+	// printf("Visiting %p\n", node);
 	m->mark = true;
 	TypeInfo t = *type_get_info(m->type);
 	
 	for(size_t i = 0; i < t.num_memb; i++){
-		graph_traversal(*(void**)((uint8_t*)node + (uint64_t)t.members[i]));
+		graph_traversal(*(void**)((uint8_t*)node + (size_t)t.members[i]));
 	}
-	
-	if(m->type.index == TYPE_ARRAY().index){
-		Array* a = node;
-		if(a->type.index == TYPE_POINTER().index){
-			for(size_t i = 0; i < a->len; i++){
-				if(*(*(void***)a->data + i) == NULL) break;
-				graph_traversal(*(*(void***)a->data + i));
+
+	if(m->type.index == TYPE_VECTOR().index){
+		Vector* v = node;
+		if(v->type.index == TYPE_POINTER().index){
+			for(size_t i = 0; i < v->len; i++){
+				size_t offset = i * type_get_info(TYPE_POINTER())->struct_sz;
+				graph_traversal(*(void**)(v->data + offset));
 			}
 		}
 	}
@@ -170,61 +143,83 @@ void graph_traversal(void* node){
 
 
 void* run_garbage_collection(void* _){
+	int ran = 0;
 	while(running){
 		usleep(100000); // 100ms
-		pthread_mutex_lock(&mutex);
+		pthread_mutex_lock(mutex);
 		// printf("STARTING GARBAGE COLLECTION\n");
 		graph_traversal(root);
 		manager_delete_unmarked(memory);
+		ran++;
 		// printf("ENDING GARBAGE COLLECTION\n");
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(mutex);
 	}
+	printf("GC RAN %i TIMES\n", ran);
 	return NULL;
 }
 
+
+// Function functions
+
+
+Vector* function_new_helper(size_t size){
+	// Vector** output = manager_allocate(&memory, TYPE_POINTER());
+	Vector* output = manager_allocate_arbitrary(&memory, TYPE_VECTOR(),
+		sizeof(Vector) + (size * type_get_info(TYPE_POINTER())->struct_sz));
+	output->type = TYPE_POINTER();
+	output->cap = size;
+	return output;
+}
+
+Vector** function_new(){
+	Vector** output = manager_allocate(&memory, TYPE_POINTER());
+	*output = function_new_helper(2);
+	return output;
+}
+
+bool function_push(Vector** v, void* item){
+	if(!v || !(*v)) return false;
+	// printf("Assigning %p to %p at pos %lu\n", item, (void*)*v, (**v).len);
+	size_t data_size = type_get_info((**v).type)->struct_sz;
+	if((**v).len == (**v).cap){
+		Vector* new = function_new_helper(2 * (**v).cap);
+		if(!new) return false;
+		new->len = (**v).len;
+		memcpy(new->data, (**v).data, (**v).len*data_size);
+		// printf("R Resizing for %p\n", item);
+		*v = new;
+	}
+	memcpy((**v).data + ((**v).len*data_size), &item, data_size);
+	(**v).len++;
+	return true;
+}
+
+void* function_pop(Vector* v){
+	if(!v || v->len == 0){
+		// printf("Returning NULL\n");
+		return NULL;
+	}
+	v->len--;
+	// printf("Popping pos %lu from %p\n", v->len, (void*)v);
+	return *(void**)(v->data + (v->len * type_get_info(v->type)->struct_sz));
+}
+
+Vector** function_prev(Vector* v){
+	if(!v){
+		// printf("function_prev: returning NULL\n");
+		return NULL;
+	}
+	Vector** output = *(Vector***)v->data;
+	// printf("funtion_prev: returning %p\n", (void*)output);
+	return output;
+}
+
+
 // Debug Functions
 
+
 void graph_print_memory(){
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(mutex);
 	manager_print(memory);
-	pthread_mutex_unlock(&mutex);
-}
-
-//
-
-void function_push(Function* f, void* child){
-	if(f->num_children >= f->children->len) array_resize(f->children, 2*f->num_children);
-	*((void**)(*(void**)f->children->data)+f->num_children) = child;
-	f->num_children++;
-}
-
-
-void* function_pop(Function* f){
-	f->num_children--;
-	void* output = *((void**)(*(void**)f->children->data)+f->num_children);
-	*((void**)(*(void**)f->children->data)+f->num_children) = NULL;
-	return output;
-}
-
-
-// Assumes l is not NULL, *l can be NULL
-void list_push(List** l, Function* func){
-	List* new = malloc(sizeof(*new));
-	new->func = func;
-	new->next = *l;
-	*l = new;
-}
-
-
-List* list_pop(List** l){
-	if(!(*l)) return NULL;
-	List* output = *l;
-	*l = output->next;
-	return output;
-}
-
-
-void list_free(List** l){
-	List* node;
-	while((node = list_pop(l)) != NULL) free(node);
+	pthread_mutex_unlock(mutex);
 }
