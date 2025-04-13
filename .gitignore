@@ -2,3 +2,5 @@ out
 src/*.o
 tests/tests
 tests/*.o
+other/
+callgrind.out
