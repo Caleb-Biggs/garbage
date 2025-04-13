@@ -1,4 +1,3 @@
-// #include "garbage.h" 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -82,6 +81,7 @@ bool tree_contains(Tree* t, int val){
 }
 
 
+// #define TESTS 20000
 #define TESTS 2000000
 void tree_gc(){
 	srand(time(NULL));

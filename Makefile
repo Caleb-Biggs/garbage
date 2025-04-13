@@ -19,8 +19,13 @@ exec: $(EXEC)
 	./$^
 
 mem: $(EXEC)
-	valgrind --leak-check=full --show-leak-kinds=all ./$^
+	valgrind --max-stackframe=8000048 --leak-check=full --show-leak-kinds=all ./$^
 # 	cpulimit -l 80 -- valgrind --leak-check=full --show-leak-kinds=all ./$^
+
+profile: $(EXEC)
+	valgrind --max-stackframe=8000048 --tool=callgrind --callgrind-out-file=callgrind.out ./$^
+	kcachegrind callgrind.out
+
 
 clean:
 	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)
