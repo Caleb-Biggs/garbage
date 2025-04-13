@@ -126,9 +126,9 @@ void arena_print(Arena* a){
 	// 		printf("Type: %lu\n", m->type.index);
 	// 		printf("Pointer: %p\n", arena_get_data(a, i));
 	// 	} else {
-	// 		printf("Label: INDEX\n");
-	// 		printf("Mark: %i\n", m->mark);
-	// 		printf("Index: %lu\n", m->index);
+	// 		// printf("Label: INDEX\n");
+	// 		// printf("Mark: %i\n", m->mark);
+	// 		// printf("Index: %lu\n", m->index);
 	// 	}
 	// }
 }

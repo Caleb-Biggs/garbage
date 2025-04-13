@@ -153,6 +153,7 @@ void* run_garbage_collection(void* _){
 		ran++;
 		// printf("ENDING GARBAGE COLLECTION\n");
 		pthread_mutex_unlock(mutex);
+		// break;
 	}
 	printf("GC RAN %i TIMES\n", ran);
 	return NULL;
