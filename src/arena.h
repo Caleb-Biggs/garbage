@@ -3,7 +3,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "metadata.h"
+#include <stdbool.h>
+#include "types.h"
 
 // TODO: num_items, empty, and last only need to be large enough to hold ARENA_SIZE
 // TODO: data_size probably has a reasonable max size that's less than 64 bits

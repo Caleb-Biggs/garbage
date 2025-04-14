@@ -2,11 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "types.h"
-#include "garbage.h"
 
-/**
- * Type Functions
- **/
 
 static size_t next_index = 0;
 static size_t curr_size = TYPE_INIT_SIZE;
@@ -33,6 +29,16 @@ TypeInfo* type_get_info(TypeIndex t){
 }
 
 
+size_t type_get_size(TypeIndex t){
+	return type_get_info(t)->struct_sz;
+}
+
+
+bool type_equal(TypeIndex t1, TypeIndex t2){
+	return (t1.index == t2.index);
+}
+
+
 void type_free(){
 	for(size_t i = 0; i < next_index; i++)
 		free(types[i].members);
@@ -40,16 +46,19 @@ void type_free(){
 }
 
 
-TypeIndex INIT_VOID(){
-	return type_init(0, 0, NULL);
+// Assumes the pointer being passed in was allocated in an arena and
+// returns the metadata which should be located immediately before it
+Metadata* metadata_get(void* data){
+	return (Metadata*)data-1;
 }
-type_setup(VOID)
+
 
 typedef struct POINTER {
 	void* data;
 } pointer;
 struct_setup(POINTER, pointer, type_memb(pointer, data))
 
+primitive_setup(VECTOR, Vector)
 primitive_setup(BOOL, bool)
 primitive_setup(CHAR, char)
 primitive_setup(INT, int)

@@ -1,11 +1,11 @@
 CC := gcc
 CFLAGS := -Werror -Wall -Wpedantic -O2 -g #-Wextra
-HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/metadata.h src/garbage.h
+HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/garbage.h
 
 LIBS := -lm
 EXEC := out
 MAIN := src/main.o 
-OBJS := src/types.o src/arena.o src/meta_arena.o src/arena_manager.o src/metadata.o src/garbage.o
+OBJS := src/types.o src/arena.o src/meta_arena.o src/arena_manager.o src/garbage.o
 
 TEST_LIBS := check
 TEST_EXEC := tests/tests

@@ -3,17 +3,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "garbage.h"
-#include "metadata.h"
 #include "arena_manager.h"
 
-
-typedef struct VECTOR {
-	TypeIndex type;
-	size_t len;
-	size_t cap;
-	uint8_t data[];
-} Vector;
-primitive_setup(VECTOR, Vector)
 
 Vector** function_new();
 bool function_push(Vector** v, void* item);
@@ -119,13 +110,12 @@ void graph_traversal(void* node){
 		graph_traversal(*(void**)((uint8_t*)node + (size_t)t.members[i]));
 	}
 
-	if(m->type.index == TYPE_VECTOR().index){
+	if(type_equal(m->type, TYPE_VECTOR()) && 
+	type_equal(((Vector*)node)->type, TYPE_POINTER())){
 		Vector* v = node;
-		if(v->type.index == TYPE_POINTER().index){
-			for(size_t i = 0; i < v->len; i++){
-				size_t offset = i * type_get_info(TYPE_POINTER())->struct_sz;
-				graph_traversal(*(void**)(v->data + offset));
-			}
+		for(size_t i = 0; i < v->len; i++){
+			size_t offset = i * type_get_size(TYPE_POINTER());
+			graph_traversal(*(void**)(v->data + offset));
 		}
 	}
 }
@@ -151,7 +141,7 @@ void* run_garbage_collection(void* _){
 
 Vector* function_new_helper(size_t size){
 	Vector* output = manager_allocate_arbitrary(&memory, TYPE_VECTOR(),
-		sizeof(Vector) + (size * type_get_info(TYPE_POINTER())->struct_sz));
+		sizeof(Vector) + (size * type_get_size(TYPE_POINTER())));
 	output->type = TYPE_POINTER();
 	output->cap = size;
 	return output;
@@ -165,7 +155,7 @@ Vector** function_new(){
 
 bool function_push(Vector** v, void* item){
 	if(!v || !(*v)) return false;
-	size_t data_size = type_get_info((**v).type)->struct_sz;
+	size_t data_size = type_get_size((**v).type);
 	if((**v).len == (**v).cap){
 		Vector* new = function_new_helper(2 * (**v).cap);
 		if(!new) return false;
@@ -181,7 +171,7 @@ bool function_push(Vector** v, void* item){
 void* function_pop(Vector* v){
 	if(!v || v->len == 0) return NULL;
 	v->len--;
-	return *(void**)(v->data + (v->len * type_get_info(v->type)->struct_sz));
+	return *(void**)(v->data + (v->len * type_get_size(v->type)));
 }
 
 Vector** function_prev(Vector* v){

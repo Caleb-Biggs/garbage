@@ -2,7 +2,6 @@
 #include <string.h>
 #include "arena.h"
 #include "types.h"
-// #include "array.h"
 
 
 size_t arena_bytes(size_t data_size){
@@ -26,15 +25,6 @@ int arena_new(size_t data_size, Arena* output){
 
 void arena_free(Arena* a){
 	if(!a) return;
-	// Special case for pointers to arbitrarily sized data
-	// if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz){
-	// 	for(size_t i = 0; i < a->last; i++){
-	// 		Metadata* m = arena_get_metadata(a, i);
-	// 		if(m->label == DATA && m->type.index == TYPE_POINTER().index){
-	// 			free(*(void**)arena_get_data(a, i));
-	// 		}
-	// 	}	
-	// }
 	free(a->data);
 	a->data = NULL;
 }
@@ -72,12 +62,6 @@ void arena_delete_unmarked(Arena* a){
 			m->mark = false;
 			continue;
 		}
-		// printf("D %p\n", arena_get_data(a, i));
-		// Special case for pointers to arbitrarily sized data
-		// if(a->data_size == type_get_info(TYPE_POINTER())->struct_sz
-		// 	&& m->label == DATA 
-		// 	&& m->type.index == TYPE_POINTER().index
-		// )free(*(void**)arena_get_data(a, i));
 		
 		*m = (Metadata){
 			.mark = false, 

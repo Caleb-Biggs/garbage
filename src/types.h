@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define TYPE_INIT_SIZE 4
 #define TYPE_INIT_RATIO 2
@@ -17,19 +18,35 @@ typedef struct TYPE_INFO {
 	void** members;
 } TypeInfo;
 
-typedef struct ARRAY {
+typedef struct VECTOR {
 	TypeIndex type;
 	size_t len;
-	void* data;
-} Array;
+	size_t cap;
+	uint8_t data[];
+} Vector;
+
+// TODO: the mark and label fields could be combined into a single
+// "flag" field, but would this actually save space in the struct or
+// would padding be added anyway?
+typedef struct METADATA {
+	bool mark;
+	enum { DATA, INDEX
+	} label;
+	union {
+		TypeIndex type;	// DATA
+		size_t index;	// INDEX
+	};
+} Metadata;
+
 
 TypeIndex type_init(size_t struct_sz, size_t num_memb, void** members);
 TypeInfo* type_get_info(TypeIndex t);
+size_t type_get_size(TypeIndex t);
+bool type_equal(TypeIndex t1, TypeIndex t2);
 void type_free();
 
-Array* array_new(TypeIndex t, size_t len);
-void* array_get(Array a, size_t index);
-void array_resize(Array* a, size_t len);
+Metadata* metadata_get(void* data);
+
 
 #define type_memb(type, mem) (void*)(&((type*)0)->mem)
 
@@ -63,33 +80,17 @@ void array_resize(Array* a, size_t len);
 	}													\
 	type_setup(NAME)
 
-TypeIndex INIT_ARRAY();
-TypeIndex TYPE_ARRAY();
-TypeIndex INIT_POINTER();
 TypeIndex TYPE_POINTER();
-TypeIndex INIT_VOID();
-TypeIndex TYPE_VOID();
-
-TypeIndex INIT_BOOL();
+TypeIndex TYPE_VECTOR();
 TypeIndex TYPE_BOOL();
-TypeIndex INIT_CHAR();
 TypeIndex TYPE_CHAR();
-TypeIndex INIT_INT();
 TypeIndex TYPE_INT();
-TypeIndex INIT_FLOAT();
 TypeIndex TYPE_FLOAT();
-TypeIndex INIT_DOUBLE();
 TypeIndex TYPE_DOUBLE();
-TypeIndex INIT_LONG_DOUBLE();
 TypeIndex TYPE_LONG_DOUBLE();
-TypeIndex INIT_INT8();
 TypeIndex TYPE_INT8();
-TypeIndex INIT_INT16();
 TypeIndex TYPE_INT16();
-TypeIndex INIT_INT32();
 TypeIndex TYPE_INT32();
-TypeIndex INIT_INT64();
 TypeIndex TYPE_INT64();
-
 
 #endif

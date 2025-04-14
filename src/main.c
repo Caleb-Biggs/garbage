@@ -81,7 +81,7 @@ bool tree_contains(Tree* t, int val){
 }
 
 
-// #define TESTS 20000
+// #define TESTS 200000
 #define TESTS 2000000
 void tree_gc(){
 	srand(time(NULL));

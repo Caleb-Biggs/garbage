@@ -41,13 +41,12 @@ int manager_resize(ArenaManager* a, size_t size){
 
 
 void* manager_allocate(ArenaManager* a, TypeIndex t){
-	size_t size = type_get_info(t)->struct_sz;
+	size_t size = type_get_size(t);
 	if(size > a->largest) {
 		int ret = manager_resize(a, size);
 		if(ret < 0) return NULL;
 	}
 	void* output = meta_arena_allocate(a->arena_size+size, t);
-	// printf("manager allocating: %p\n", output);
 	return output;
 }
 
@@ -58,7 +57,6 @@ void* manager_allocate_arbitrary(ArenaManager* a, TypeIndex t, size_t size){
 		if(ret < 0) return NULL;
 	}
 	void* output = meta_arena_allocate(a->arena_size+size, t);
-	// printf("manager allocating: %p\n", output);
 	return output;
 }
 

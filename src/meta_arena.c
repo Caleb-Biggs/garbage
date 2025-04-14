@@ -59,22 +59,14 @@ void* meta_arena_allocate(MetaArena* m, TypeIndex t){
 	if(arena_is_full(m->arenas[m->fill_next])) 
 		m->fill_next = m->arena_next[m->fill_next];	
 
-	// printf("Allocating\n");
 	return output;
 }
 
 
-// void* meta_arena_allocate_arbitrary(MetaArena* m, size_t size){
-// 	return NULL;
-// }
-
-
 void meta_arena_delete_unmarked(MetaArena* m){
 	// Delete all marked data
-	for(size_t i = 0; i < m->num_arenas; i++){
-		// printf("Starting delete %lu\n", i);
+	for(size_t i = 0; i < m->num_arenas; i++)
 		arena_delete_unmarked(m->arenas+i);
-	}
 
 	// Remove empty arenas
 	size_t remove = 0;
