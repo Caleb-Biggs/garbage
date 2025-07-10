@@ -1,16 +1,16 @@
 CC := gcc
-CFLAGS := -Werror -Wall -Wpedantic -O2 -g #-Wextra
+CFLAGS := -Werror -Wall -Wpedantic -O2 -g -Wextra
 HEADERS := src/types.h src/arena.h src/meta_arena.h src/arena_manager.h src/garbage.h
 
-LIBS := -lm
+LIBS := #-lm
 EXEC := out
 MAIN := src/main.o 
 OBJS := src/types.o src/arena.o src/meta_arena.o src/arena_manager.o src/garbage.o
 
 TEST_LIBS := check
-TEST_EXEC := tests/tests
-TEST_MAIN := tests/tests.o
-TEST_OBJS := tests/arena_tests.o #tests/bitfield_tests.o tests/hashset_tests.o
+TEST_EXEC := #tests/tests
+TEST_MAIN := #tests/tests.o
+TEST_OBJS := #tests/arena_tests.o #tests/bitfield_tests.o tests/hashset_tests.o
 
 $(EXEC): $(MAIN) $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $(EXEC) $(MAIN) $(OBJS) $(LIBS)
@@ -26,9 +26,22 @@ profile: $(EXEC)
 	valgrind --max-stackframe=8000048 --tool=callgrind --callgrind-out-file=callgrind.out ./$^
 	kcachegrind callgrind.out
 
+bench: $(EXEC)
+	time -v $(MAKE) exec 2>&1 | grep -E 'Elapsed|Maximum'
+	time -v go run other/tree.go 2>&1 | grep -E 'Elapsed|Maximum'
+	time -v python other/tree.py 2>&1 | grep -E 'Elapsed|Maximum'
+
+CFLAGS := -Werror -Wall -Wpedantic -O2 -g -Wextra -DENABLE_VIS
+vis: clean $(MAIN) $(OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) -o $(EXEC) $(MAIN) $(OBJS) $(LIBS)
+	./$(EXEC) | python vis/visualization.py
 
 clean:
 	rm $(EXEC) $(TEST_EXEC) $(MAIN) $(TEST_MAIN) $(OBJS) $(TEST_OBJS)
+
+scratch: 
+	-$(MAKE) clean 
+	$(MAKE) $(EXEC)
 
 
 ### Tests ###

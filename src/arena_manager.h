@@ -3,7 +3,7 @@
 
 #include "meta_arena.h"
 
-#define STARTING_META_ARENAS 8
+#define STARTING_META_ARENAS 40
 
 typedef struct ARENA_MANAGER {
 	size_t largest;

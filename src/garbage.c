@@ -4,12 +4,15 @@
 #include <unistd.h>
 #include "garbage.h"
 #include "arena_manager.h"
+#include "types.h"
+#include "../vis/visualization.h"
 
 
 Vector** function_new();
 bool function_push(Vector** v, void* item);
 void* function_pop(Vector* v);
 Vector** function_prev(Vector* v);
+void* run_garbage_collection(void* _);
 
 
 static ArenaManager memory = {0};
@@ -61,12 +64,14 @@ void start_function(){
 	if(context) function_push(context, func);
 	context = func;
 
+	VIS_GC_START_FUNCTION(*context);
 	if(mutex) pthread_mutex_unlock(mutex);
 }
 
 
 void end_function(void* ret){
 	pthread_mutex_lock(mutex);
+	VIS_GC_END_FUNCTION(*context);
 
 	Vector** ending = context;
 	if(context) context = function_prev(*context);
@@ -91,6 +96,7 @@ void* gc_alloc(TypeIndex t){
 	void* output = manager_allocate(&memory, t);
 	function_push(context, output);
 
+	VIS_GC_ALLOC(output);
 	pthread_mutex_unlock(mutex);
 	return output;
 }
@@ -103,6 +109,7 @@ void graph_traversal(void* node){
 	if(!node) return;
 	Metadata* m = metadata_get(node);
 	if(m->mark) return;
+	VIS_GC_GRAPH_TRAVERSAL(node);
 	m->mark = true;
 	TypeInfo t = *type_get_info(m->type);
 	
@@ -122,13 +129,15 @@ void graph_traversal(void* node){
 
 
 void* run_garbage_collection(void* _){
-	// int ran = 0;
+	(void)_;
+	int ran = 0;
 	while(running){
 		usleep(100000); // 100ms
 		pthread_mutex_lock(mutex);
+		VIS_GC_COLLECT();
 		graph_traversal(root);
 		manager_delete_unmarked(memory);
-		// ran++;
+		ran++;
 		pthread_mutex_unlock(mutex);
 	}
 	// printf("GC RAN %i TIMES\n", ran);

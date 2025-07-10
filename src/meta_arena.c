@@ -4,15 +4,16 @@
 
 int meta_arena_new(size_t data_size, MetaArena* output){
 	if(!output) return -1;
-	size_t* arena_next = malloc(STARTING_ARENAS * sizeof(*arena_next));
-	Arena* arenas = malloc(STARTING_ARENAS * sizeof(*arenas));
+	size_t max_arenas = STARTING_ARENAS;
+	size_t* arena_next = malloc(max_arenas * sizeof(*arena_next));
+	Arena* arenas = malloc(max_arenas * sizeof(*arenas));
 	if(!arenas || !arena_next) return -2;
-	for(size_t i = 0; i < STARTING_ARENAS; i++) arena_next[i] = i+1;
+	for(size_t i = 0; i < max_arenas; i++) arena_next[i] = i+1;
 	
 	*output = (MetaArena){
 		.fill_next = 0,
 		.num_arenas = 0,
-		.max_arenas = STARTING_ARENAS,
+		.max_arenas = max_arenas,
 		.data_size = data_size,
 		.arena_next = arena_next,
 		.arenas = arenas
